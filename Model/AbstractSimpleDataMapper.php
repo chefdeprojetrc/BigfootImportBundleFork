@@ -33,7 +33,8 @@ abstract class AbstractSimpleDataMapper
      *
      * @param Data $data Object Instance of the class Data
      */
-    public function setData(Data $data){
+    public function setData(Data $data)
+    {
         $this->data = $data;
     }
 
@@ -96,14 +97,14 @@ abstract class AbstractSimpleDataMapper
 
             $em->persist($object);
 
-            if (!is_null($this->nbLigneLot) && ($cpt > 0 && ($cpt % $this->nbLigneLot == 0)) || ($cpt == $sizeData && ($cpt % $this->nbLigneLot != 0))){
+            if (!is_null($this->nbLigneLot) && ($cpt > 0 && ($cpt % $this->nbLigneLot == 0)) || ($cpt == $sizeData && ($cpt % $this->nbLigneLot != 0))) {
                 $em->flush();
             }
 
             $cpt++;
         }
 
-        if (is_null($this->nbLigneLot)){
+        if (is_null($this->nbLigneLot)) {
             $em->flush();
         }
 
