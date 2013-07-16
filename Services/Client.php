@@ -49,25 +49,34 @@ class Client
      * Get the distant file by Curl Method
      *
      * @param $uri String Name of the distant file
-     * @return string
+     * @param $saveInFile boolean If true save data in file and return the filename, otherwise return the data
+     * @return string filename or data
      */
-    public function get($uri)
+    public function get($uri, $saveInFile = true)
     {
         $url      = sprintf("%s://%s/%s", $this->protocol, ($this->port > 0) ? $this->domain.':'.$this->port : $this->domain, trim($uri, '/'));
-        $filename = sprintf("/tmp/%s", uniqid());
 
         $curl = curl_init();
-        $file = fopen($filename, 'w');
         curl_setopt($curl, CURLOPT_URL, $url);
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($curl, CURLOPT_FILE, $file);
         curl_setopt($curl, CURLOPT_USERPWD, sprintf("%s:%s", $this->username, $this->password));
-        curl_exec($curl);
+
+        if ($saveInFile) {
+            $filename = sprintf("/tmp/%s", uniqid());
+            $file = fopen($filename, 'w');
+            curl_setopt($curl, CURLOPT_FILE, $file);
+        }
+
+        $data = curl_exec($curl);
         curl_close($curl);
 
-        fclose($file);
+        if ($saveInFile) {
+            fclose($file);
 
-        return $filename;
+            return $filename;
+        }
+
+        return $data;
     }
 }
 
