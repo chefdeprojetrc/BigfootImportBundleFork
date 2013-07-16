@@ -53,7 +53,7 @@ class Client
      */
     public function get($uri)
     {
-        $url      = sprintf("%s://%s/%s", $this->protocol, $this->domain, trim($uri, '/'));
+        $url      = sprintf("%s://%s/%s", $this->protocol, ($this->port > 0) ? $this->domain.':'.$this->port : $this->domain, trim($uri, '/'));
         $filename = sprintf("/tmp/%s", uniqid());
 
         $curl = curl_init();
