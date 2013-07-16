@@ -13,7 +13,7 @@ use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 class DataSourceType extends AbstractType
 {
     /**
-     * Set the form made up of a name, a domain, a port, a username and a password
+     * Set the form made up of a name, a protocol, a domain, a port, a username and a password
      * @param FormBuilderInterface $builder
      * @param array $options
      */
@@ -21,6 +21,12 @@ class DataSourceType extends AbstractType
     {
         $builder
             ->add('name')
+            ->add('protocol', 'choice', array(
+                'choices' => array(
+                    'http' => 'HTTP',
+                    'ftp' => 'FTP'
+                ),
+            ))
             ->add('domain')
             ->add('port')
             ->add('username')

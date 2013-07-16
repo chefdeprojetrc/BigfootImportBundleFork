@@ -56,6 +56,12 @@ class DataSource
      */
     private $password;
 
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="protocol", type="string", length=255)
+     */
+    private $protocol;
 
     /**
      * Get id
@@ -180,5 +186,28 @@ class DataSource
     public function getPassword()
     {
         return $this->password;
+    }
+
+    /**
+     * Set protocol
+     *
+     * @param string $protocol
+     * @return DataSource
+     */
+    public function setProtocol($protocol)
+    {
+        $this->protocol = $protocol;
+
+        return $this;
+    }
+
+    /**
+     * Get protocol
+     *
+     * @return string
+     */
+    public function getProtocol()
+    {
+        return $this->protocol;
     }
 }

@@ -7,7 +7,7 @@ namespace Bigfoot\Bundle\ImportBundle\Services;
  *
  * @Author S.huot s.huot@c2is.fr
  */
-class FtpClient
+class Client
 {
     protected $domain;
 
@@ -17,20 +17,24 @@ class FtpClient
 
     protected $password;
 
+    protected $protocol;
+
     /**
-     * Initialize the FTP Client
+     * Initialize the Client
      *
-     * @param $domain String IP Address
-     * @param int $port Integer Port of the address
+     * @param $protocol String Protocol
+     * @param $domain String IP Address or domain name
+     * @param $port Integer Port of the address
      */
-    public function init($domain, $port = 21)
+    public function init($protocol, $domain, $port = 21)
     {
+        $this->protocol = $protocol;
         $this->domain = $domain;
         $this->port   = $port;
     }
 
     /**
-     * Credentials of the FTP
+     * Credentials of the client
      *
      * @param $username String Login of the FTP
      * @param $password String Password of the FTP
@@ -49,7 +53,7 @@ class FtpClient
      */
     public function get($uri)
     {
-        $url      = sprintf("ftp://%s/%s", $this->domain, trim($uri, '/'));
+        $url      = sprintf("%s://%s/%s", $this->protocol, $this->domain, trim($uri, '/'));
         $filename = sprintf("/tmp/%s", uniqid());
 
         $curl = curl_init();
