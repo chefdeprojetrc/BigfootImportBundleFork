@@ -6,6 +6,7 @@ namespace Bigfoot\Bundle\ImportBundle\Services;
  * FTP class
  *
  * @Author S.huot s.huot@c2is.fr
+ * @Author S.Plançon s.plancon@c2is.fr
  */
 class Client
 {

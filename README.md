@@ -216,7 +216,7 @@ public function indexAction()
     /* Where 'nameOfTheFtpConfiguration' is the name you entered for the FTP configuration  */
     $object = $em->getRepository('BigfootImportBundle:DataSource')->findOneBy(array('name' => 'nameOfTheFtpConfiguration'));
 
-    $client = $this->get('bigfoot_import.ftpclient');
+    $client = $this->get('bigfoot_import.client');
     $client->init($object->getDomain());
     $client->setAuth($object->getUsername(),$object->getPassword());
 

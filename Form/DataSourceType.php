@@ -9,6 +9,7 @@ use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 /**
  * Imports settings
  * @Author: S.huot s.huot@c2is.fr
+ * @Author: S.Plançon s.plancon@c2is.fr
  */
 class DataSourceType extends AbstractType
 {
