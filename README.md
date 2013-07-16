@@ -13,7 +13,7 @@ Add 'BigFoot/ImportBundle' into your composer.json file in the 'require' section
 "require": {
     ...
     ...
-    "bigfoot/seo-bundle": "dev-master",
+    "bigfoot/import-bundle": "dev-master",
 }
 ```
 
