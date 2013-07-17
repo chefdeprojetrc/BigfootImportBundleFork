@@ -8,6 +8,13 @@ services:
     bigfoot_import.csvparser:
         class: '%bigfoot_import.csvparser.class%'
 
+    form.type.protocol:
+        class: Bigfoot\Bundle\ImportBundle\Form\ProtocolType
+        arguments:
+            - "%import.datasource.protocols%"
+        tags:
+            - { name: form.type, alias: protocol }
+
     kernel.listener.bigfoot_import_menu_listener:
         class: Bigfoot\Bundle\ImportBundle\Listener\MenuListener
         tags:

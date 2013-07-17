@@ -221,5 +221,7 @@ class DataSource
             'minMessage' => "This value should be between 0 and 65535.",
             'maxMessage' => "This value should be between 0 and 65535.",
         )));
+
+        $metadata->addPropertyConstraint('protocol', new Assert\NotNull());
     }
 }

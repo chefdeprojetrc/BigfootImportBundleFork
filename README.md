@@ -195,13 +195,29 @@ class QualitelisNotesDataMapper extends AbstractSimpleDataMapper
 }
 ```
 
+Configuration
+-------------
+
+You could define availables protocols for Datasource in your `config.yml`. By default, only http and ftp protocols are availables.
+
+```yml
+# app/config/config.yml
+
+bigfoot_import:
+    datasource:
+        protocol:
+            ftp: FTP
+            http: HTTP
+            scp: SCP
+            ssh: SSH
+```
 
 Usage
 -----
 
 Go to the admin interface available at /admin/datasource/.
 
-Add a FTP configuration (name, domain, port, username, password).
+Add a configuration (name, protocol, domain, port, username, password).
 
 To import, write this into an action method:
 

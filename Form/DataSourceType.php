@@ -22,11 +22,8 @@ class DataSourceType extends AbstractType
     {
         $builder
             ->add('name')
-            ->add('protocol', 'choice', array(
-                'choices' => array(
-                    'http' => 'HTTP',
-                    'ftp' => 'FTP'
-                ),
+            ->add('protocol', 'protocol', array(
+                'empty_value' => 'Choose protocol'
             ))
             ->add('domain')
             ->add('port')
