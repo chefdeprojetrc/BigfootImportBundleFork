@@ -2,6 +2,7 @@
 
 namespace Bigfoot\Bundle\ImportBundle\Controller;
 
+use Bigfoot\Bundle\CoreBundle\Theme\Menu\Item;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
@@ -31,6 +32,8 @@ class DataSourceController extends Controller
 
         $entities = $em->getRepository('BigfootImportBundle:DataSource')->findAll();
 
+        $this->container->get('bigfoot.theme')['page_content']['globalActions']->addItem(new Item('crud_add', 'Add a datasource', 'admin_datasource_new'));
+
         return array(
             'entities' => $entities,
         );
@@ -53,7 +56,7 @@ class DataSourceController extends Controller
             $em->persist($entity);
             $em->flush();
 
-            return $this->redirect($this->generateUrl('admin_datasource_show', array('id' => $entity->getId())));
+            return $this->redirect($this->generateUrl('admin_datasource'));
         }
 
         return array(
