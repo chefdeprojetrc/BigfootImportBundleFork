@@ -4,17 +4,32 @@ namespace Bigfoot\Bundle\ImportBundle\Model;
 
 use Exception;
 use Bigfoot\Bundle\ImportBundle\Services\DataMapper\Data;
+use Symfony\Component\DependencyInjection\Container;
 
 /**
  * Class AbstractSimpleDataMapper
- * @Author S.huot s.huot@c2is.fr
+ * @author S.huot s.huot@c2is.fr
  */
 abstract class AbstractSimpleDataMapper
 {
+    /**
+     * @var
+     */
     public $className;
+
+    /**
+     * @var
+     */
     protected $data;
 
+    /**
+     * @var \Symfony\Component\DependencyInjection\Container
+     */
     protected $container;
+
+    /**
+     * @var null
+     */
     protected $nbLigneLot;
 
     /**
@@ -22,7 +37,7 @@ abstract class AbstractSimpleDataMapper
      * @param $container Array Dependency injection
      * @param null $nbLigneLot Integer Number of the line per batch
      */
-    public function __construct($container, $nbLigneLot = null)
+    public function __construct(Container $container, $nbLigneLot = null)
     {
         $this->container = $container;
         $this->nbLigneLot = $nbLigneLot;

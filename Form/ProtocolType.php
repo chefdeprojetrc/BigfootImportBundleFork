@@ -16,12 +16,18 @@ use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 /**
  * Class ProtocolType
  * @package Bigfoot\Bundle\ImportBundle\Form
- * @Author S.Plançon s.plancon@c2is.fr
+ * @author S.Plançon s.plancon@c2is.fr
  */
 class ProtocolType extends AbstractType {
 
+    /**
+     * @var array
+     */
     private $protocolChoices;
 
+    /**
+     * @param array $protocolChoices
+     */
     public function __construct(array $protocolChoices)
     {
         $this->protocolChoices = $protocolChoices;

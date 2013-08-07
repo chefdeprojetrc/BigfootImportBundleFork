@@ -5,6 +5,10 @@ namespace Bigfoot\Bundle\ImportBundle\Listener;
 use Bigfoot\Bundle\CoreBundle\Event\MenuEvent;
 use Bigfoot\Bundle\CoreBundle\Theme\Menu\Item;
 
+/**
+ * Class MenuListener
+ * @package Bigfoot\Bundle\ImportBundle\Listener
+ */
 class MenuListener
 {
     /**
@@ -19,7 +23,6 @@ class MenuListener
         if ($menu->getName() == 'sidebar_menu') {
             $menu->addItem(new Item('sidebar_settings_import', 'Import Settings','admin_datasource'));
         }
-
     }
 }
 
