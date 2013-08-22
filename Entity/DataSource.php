@@ -35,7 +35,7 @@ class DataSource
      * @var string
      *
      * @Gedmo\Slug(fields={"name"}, unique=true)
-     * @ORM\Column(name="slug", type="string", length=255)
+     * @ORM\Column(name="slug", type="string", length=255, unique=true)
      */
     private $slug;
 
