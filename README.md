@@ -10,7 +10,7 @@ File formats supported :
 How to import XML file
 ----------------------
 
-See [XmlMapper Documentation](./Resources/xmlmapper.md)
+See [XmlMapper Documentation](./Resources/doc/xmlmapper.md)
 
 Installation
 ------------
