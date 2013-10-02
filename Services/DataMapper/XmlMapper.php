@@ -1,48 +1,69 @@
 <?php
-/**
- * Created by JetBrains PhpStorm.
- * User: splancon
- * Date: 01/10/13
- * Time: 14:17
- * To change this template use File | Settings | File Templates.
- */
-
 namespace Bigfoot\Bundle\ImportBundle\Services\DataMapper;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\Yaml\Yaml;
 
-class XmlMapper {
-
+/**
+ * Class XmlMapper
+ *
+ * Implements import XMl data in project database
+ *
+ * @package Bigfoot\Bundle\ImportBundle\Services\DataMapper
+ */
+class XmlMapper
+{
     private $controller;
-    private $mapping_info;
+    private $mappingInfo;
 
+    /**
+     * Construct an XmlParser
+     *
+     * @param Controller $controller  Controller using the mapper
+     * @param string     $mappingFile URl to yaml file contains mapping informations
+     */
     public function __construct(Controller $controller, $mappingFile)
     {
         $this->controller = $controller;
 
         // Chargement de la configuration du mapping
-        $this->mapping_info = Yaml::parse(file_get_contents($mappingFile));
+        $this->mappingInfo = Yaml::parse(file_get_contents($mappingFile));
 
-        if ($this->mapping_info == null || !is_array($this->mapping_info)) {
+        if ($this->mappingInfo == null || !is_array($this->mappingInfo)) {
             echo "Mapping schema isn't valid.\nImport will not be possible without a valid mapping schema.\n";
         }
     }
 
-    public function map($xmlElement) {
+    /**
+     * Start mapping
+     *
+     * @param \SimpleXMLElement $xmlElement XmlElement to import
+     */
+    public function map(\SimpleXMLElement $xmlElement)
+    {
 
-        if ($this->mapping_info == null || !is_array($this->mapping_info)) {
+        if ($this->mappingInfo == null || !is_array($this->mappingInfo)) {
             echo "Mapping schema isn't valid.\nPlease load a valid mapping schema before performing an import.\n";
         } else {
-            $this->xmlElementToEntity($this->mapping_info, $xmlElement);
+            $this->xmlElementToEntity($this->mappingInfo, $xmlElement);
         }
     }
 
-    private function xmlElementToEntity(array $mapping_info, $xmlElement, $parentElement = null)
+    /**
+     * Internal recursive function to perform mapping.
+     * Perform mapping for parent entity, and launch recursively for all children entity
+     *
+     * @param array             $mapping
+     * @param \SimpleXmlElement $xmlElement
+     * @param \SimpleXMLElement $parentElement
+     *
+     * @return mixed
+     */
+    private function xmlElementToEntity(array $mapping, \SimpleXMLElement $xmlElement, \SimpleXMLElement $parentElement = null)
     {
         $em = $this->controller->getDoctrine()->getManager();
 
-        foreach ($mapping_info as $objectName => $description) {
+        foreach ($mapping as $objectName => $description) {
             if (is_array($description)) {
 
                 $oldObject = null;
@@ -68,26 +89,25 @@ class XmlMapper {
                                 }
                             }
                         } else {
-                            foreach ($xpath as $type => $type_description) {
+                            foreach ($xpath as $type => $typeDescription) {
                                 // Nettoyage avant import
-                                if (isset($type_description['clear'])) {
-                                    if (is_array($type_description['clear']) )
-                                    {
-                                        $oldElements = $$objectName->$type_description['clear']['getFunction']();
+                                if (isset($typeDescription['clear'])) {
+                                    if (is_array($typeDescription['clear'])) {
+                                        $oldElements = $$objectName->$typeDescription['clear']['getFunction']();
                                         if ($oldElements != null) {
                                             foreach ($oldElements as $oldElement) {
-                                                $$objectName->$type_description['clear']['removeFunction']($oldElement);
+                                                $$objectName->$typeDescription['clear']['removeFunction']($oldElement);
                                                 $em->remove($oldElement);
                                             }
                                         }
                                     }
                                 }
 
-                                if (count($xmlElement->xpath($type_description['xpath'])) == 0) {
+                                if (count($xmlElement->xpath($typeDescription['xpath'])) == 0) {
                                     //$$objectName->$function(null);
                                 } else {
-                                    foreach ($xmlElement->xpath($type_description['xpath']) as $childElement) {
-                                        $myChild = $this->xmlElementToEntity(array($type => $type_description), $childElement, $$objectName);
+                                    foreach ($xmlElement->xpath($typeDescription['xpath']) as $childElement) {
+                                        $myChild = $this->xmlElementToEntity(array($type => $typeDescription), $childElement, $$objectName);
                                         if ($myChild != null) {
                                             $$objectName->$function($myChild);
                                         }
@@ -111,6 +131,7 @@ class XmlMapper {
                 $em->persist($$objectName);
                 $em->flush();
                 $em->refresh($$objectName);
+
                 return $$objectName;
 
             } else {
