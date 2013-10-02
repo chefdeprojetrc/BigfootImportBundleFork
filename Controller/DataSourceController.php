@@ -32,7 +32,8 @@ class DataSourceController extends Controller
 
         $entities = $em->getRepository('BigfootImportBundle:DataSource')->findAll();
 
-        $this->container->get('bigfoot.theme')['page_content']['globalActions']->addItem(new Item('crud_add', 'Add a datasource', 'admin_datasource_new'));
+        $theme = $this->container->get('bigfoot.theme');
+        $theme['page_content']['globalActions']->addItem(new Item('crud_add', 'Add a datasource', 'admin_datasource_new'));
 
         return array(
             'entities' => $entities,

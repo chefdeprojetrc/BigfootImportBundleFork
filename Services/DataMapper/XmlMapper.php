@@ -69,7 +69,8 @@ class XmlMapper
                 $oldObject = null;
                 if (isset($description['key'])) {
                     // Tentative de récupération de l'objet
-                    $oldObject = $em->getRepository($description['repository'])->findOneBy(array($description['key']['keyName'] => $xmlElement->xpath($description['key']['xmlKey'])[0]));
+                    $key = $xmlElement->xpath($description['key']['xmlKey']);
+                    $oldObject = $em->getRepository($description['repository'])->findOneBy(array($description['key']['keyName'] => $key[0]));
                 }
 
                 if (!is_null($oldObject)) {
@@ -119,7 +120,8 @@ class XmlMapper
                         if ( count($xmlElement->xpath($xpath)) == 0) {
                             $$objectName->$function(null);
                         } else {
-                            $$objectName->$function((string) $xmlElement->xpath($xpath)[0]);
+                            $path = $xmlElement->xpath($xpath);
+                            $$objectName->$function((string) $path[0]);
                         }
                     }
                 }
