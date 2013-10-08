@@ -55,11 +55,11 @@ class XmlMapper
      *
      * @param array             $mapping
      * @param \SimpleXmlElement $xmlElement
-     * @param \SimpleXMLElement $parentElement
+     * @param $parentElement
      *
      * @return mixed
      */
-    private function xmlElementToEntity(array $mapping, \SimpleXMLElement $xmlElement, \SimpleXMLElement $parentElement = null)
+    private function xmlElementToEntity(array $mapping, \SimpleXMLElement $xmlElement, $parentElement = null)
     {
         $em = $this->controller->getDoctrine()->getManager();
 
