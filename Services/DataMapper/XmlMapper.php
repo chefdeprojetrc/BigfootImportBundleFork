@@ -68,8 +68,12 @@ class XmlMapper
 
                 $oldObject = null;
                 if (isset($description['key'])) {
-                    // Tentative de récupération de l'objet
+                    // We attempt to retrieve an existing object corresponding to XML data
                     $key = $xmlElement->xpath($description['key']['xmlKey']);
+                    // If xmlKey not found in XMl Data, there's no object to create. So we return null
+                    if (!isset($key[0])) {
+                        return null;
+                    }
                     $oldObject = $em->getRepository($description['repository'])->findOneBy(array($description['key']['keyName'] => $key[0]));
                 }
 
