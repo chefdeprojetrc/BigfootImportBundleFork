@@ -38,14 +38,17 @@ class XmlMapper
      * Start mapping
      *
      * @param \SimpleXMLElement $xmlElement XmlElement to import
+     *
+     * @return mixed Return null if mappingInfo isn't valid otherwise return an object
      */
     public function map(\SimpleXMLElement $xmlElement)
     {
 
         if ($this->mappingInfo == null || !is_array($this->mappingInfo)) {
             echo "Mapping schema isn't valid.\nPlease load a valid mapping schema before performing an import.\n";
+            return null;
         } else {
-            $this->xmlElementToEntity($this->mappingInfo, $xmlElement);
+            return $this->xmlElementToEntity($this->mappingInfo, $xmlElement);
         }
     }
 
@@ -67,6 +70,7 @@ class XmlMapper
             if (is_array($description)) {
 
                 $oldObject = null;
+                $$objectName = null;
                 if (isset($description['key'])) {
                     // We attempt to retrieve an existing object corresponding to XML data
                     $key = $xmlElement->xpath($description['key']['xmlKey']);
