@@ -121,12 +121,19 @@ class XmlMapper
                             }
                         }
                     } else {
-                        if ( count($xmlElement->xpath($xpath)) == 0) {
+                        if ((string) $xpath == 'valueOfXpath') {
+                            $element = (string)$xmlElement;
+                            if (!empty($element)) {
+                                $$objectName->$function($element);
+                            }
+                        }
+                        else if ( count($xmlElement->xpath($xpath)) == 0) {
                             $$objectName->$function(null);
                         } else {
                             $path = $xmlElement->xpath($xpath);
                             $$objectName->$function((string) $path[0]);
                         }
+
                     }
                 }
 
