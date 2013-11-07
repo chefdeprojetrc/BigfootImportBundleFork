@@ -8,12 +8,14 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Cache;
 use Bigfoot\Bundle\ImportBundle\Entity\DataSource;
 use Bigfoot\Bundle\ImportBundle\Form\DataSourceType;
 
 /**
  * DataSource controller.
  *
+ * @Cache(maxage="0", smaxage="0", public="false")
  * @Route("/admin/datasource")
  */
 class DataSourceController extends Controller
