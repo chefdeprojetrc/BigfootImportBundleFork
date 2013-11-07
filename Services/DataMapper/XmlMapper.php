@@ -66,6 +66,8 @@ class XmlMapper
     {
         $em = $this->controller->getDoctrine()->getManager();
 
+//        var_dump($xmlElement);die;
+
         foreach ($mapping as $objectName => $description) {
             if (is_array($description)) {
 
@@ -125,19 +127,12 @@ class XmlMapper
                             }
                         }
                     } else {
-                        if ((string) $xpath == 'valueOfXpath') {
-                            $element = (string)$xmlElement;
-                            if (!empty($element)) {
-                                $$objectName->$function($element);
-                            }
-                        }
-                        else if ( count($xmlElement->xpath($xpath)) == 0) {
+                        if ( count($xmlElement->xpath($xpath)) == 0) {
                             $$objectName->$function(null);
                         } else {
                             $path = $xmlElement->xpath($xpath);
                             $$objectName->$function((string) $path[0]);
                         }
-
                     }
                 }
 
