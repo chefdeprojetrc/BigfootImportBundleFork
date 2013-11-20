@@ -61,6 +61,11 @@ class DataSourceController extends CrudController
         );
     }
 
+    protected function getFormType()
+    {
+        return 'bigfoot_bundle_importbundle_datasourcetype';
+    }
+
     /**
      * Lists all DataSource entities.
      *
@@ -72,6 +77,7 @@ class DataSourceController extends CrudController
     {
         return $this->doIndex();
     }
+
     /**
      * Creates a new DataSource entity.
      *
@@ -119,6 +125,7 @@ class DataSourceController extends CrudController
     {
         return $this->doUpdate($request, $id);
     }
+
     /**
      * Deletes a DataSource entity.
      *
