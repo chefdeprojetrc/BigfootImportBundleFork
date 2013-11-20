@@ -2,15 +2,17 @@
 
 namespace Bigfoot\Bundle\ImportBundle\Controller;
 
+use Bigfoot\Bundle\CoreBundle\Crud\CrudController;
 use Bigfoot\Bundle\CoreBundle\Theme\Menu\Item;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Cache;
 use Bigfoot\Bundle\ImportBundle\Entity\DataSource;
 use Bigfoot\Bundle\ImportBundle\Form\DataSourceType;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * DataSource controller.
@@ -18,54 +20,68 @@ use Bigfoot\Bundle\ImportBundle\Form\DataSourceType;
  * @Cache(maxage="0", smaxage="0", public="false")
  * @Route("/admin/datasource")
  */
-class DataSourceController extends Controller
+class DataSourceController extends CrudController
 {
+    /**
+     * Used to generate route names.
+     * The helper method of this class will use routes named after this name.
+     * This means if you extend this class and use its helper methods, if getName() returns 'my_controller', you must implement a route named 'my_controller'.
+     *
+     * @return string
+     */
+    protected function getName()
+    {
+        return 'admin_datasource';
+    }
+
+    /**
+     * Must return the entity full name (eg. BigfootCoreBundle:Tag).
+     *
+     * @return string
+     */
+    protected function getEntity()
+    {
+        return 'BigfootImportBundle:DataSource';
+    }
+
+    /**
+     * Must return an associative array field name => field label.
+     *
+     * @return array
+     */
+    protected function getFields()
+    {
+        return array(
+            'id'        => 'ID',
+            'username'  => 'Name',
+            'domain'    => 'Domain',
+            'port'      => 'Port',
+            'username'  => 'Username',
+            'password'  => 'Password',
+        );
+    }
 
     /**
      * Lists all DataSource entities.
      *
      * @Route("/", name="admin_datasource")
      * @Method("GET")
-     * @Template()
+     * @Template("BigfootCoreBundle:crud:index.html.twig")
      */
     public function indexAction()
     {
-        $em = $this->getDoctrine()->getManager();
-
-        $entities = $em->getRepository('BigfootImportBundle:DataSource')->findAll();
-
-        $theme = $this->container->get('bigfoot.theme');
-        $theme['page_content']['globalActions']->addItem(new Item('crud_add', 'Add a datasource', 'admin_datasource_new'));
-
-        return array(
-            'entities' => $entities,
-        );
+        return $this->doIndex();
     }
     /**
      * Creates a new DataSource entity.
      *
      * @Route("/", name="admin_datasource_create")
      * @Method("POST")
-     * @Template("BigfootImportBundle:DataSource:new.html.twig")
+     * @Template("BigfootCoreBundle:crud:new.html.twig")
      */
     public function createAction(Request $request)
     {
-        $entity  = new DataSource();
-        $form = $this->createForm(new DataSourceType(), $entity);
-        $form->submit($request);
-
-        if ($form->isValid()) {
-            $em = $this->getDoctrine()->getManager();
-            $em->persist($entity);
-            $em->flush();
-
-            return $this->redirect($this->generateUrl('admin_datasource'));
-        }
-
-        return array(
-            'entity' => $entity,
-            'form'   => $form->createView(),
-        );
+        return $this->doCreate($request);
     }
 
     /**
@@ -73,42 +89,11 @@ class DataSourceController extends Controller
      *
      * @Route("/new", name="admin_datasource_new")
      * @Method("GET")
-     * @Template()
+     * @Template("BigfootCoreBundle:crud:new.html.twig")
      */
     public function newAction()
     {
-        $entity = new DataSource();
-        $form   = $this->createForm(new DataSourceType(), $entity);
-
-        return array(
-            'entity' => $entity,
-            'form'   => $form->createView(),
-        );
-    }
-
-    /**
-     * Finds and displays a DataSource entity.
-     *
-     * @Route("/{id}", name="admin_datasource_show")
-     * @Method("GET")
-     * @Template()
-     */
-    public function showAction($id)
-    {
-        $em = $this->getDoctrine()->getManager();
-
-        $entity = $em->getRepository('BigfootImportBundle:DataSource')->find($id);
-
-        if (!$entity) {
-            throw $this->createNotFoundException('Unable to find DataSource entity.');
-        }
-
-        $deleteForm = $this->createDeleteForm($id);
-
-        return array(
-            'entity'      => $entity,
-            'delete_form' => $deleteForm->createView(),
-        );
+        return $this->doNew();
     }
 
     /**
@@ -116,26 +101,11 @@ class DataSourceController extends Controller
      *
      * @Route("/{id}/edit", name="admin_datasource_edit")
      * @Method("GET")
-     * @Template()
+     * @Template("BigfootCoreBundle:crud:edit.html.twig")
      */
     public function editAction($id)
     {
-        $em = $this->getDoctrine()->getManager();
-
-        $entity = $em->getRepository('BigfootImportBundle:DataSource')->find($id);
-
-        if (!$entity) {
-            throw $this->createNotFoundException('Unable to find DataSource entity.');
-        }
-
-        $editForm = $this->createForm(new DataSourceType(), $entity);
-        $deleteForm = $this->createDeleteForm($id);
-
-        return array(
-            'entity'      => $entity,
-            'edit_form'   => $editForm->createView(),
-            'delete_form' => $deleteForm->createView(),
-        );
+        return $this->doEdit($id);
     }
 
     /**
@@ -143,34 +113,11 @@ class DataSourceController extends Controller
      *
      * @Route("/{id}", name="admin_datasource_update")
      * @Method("PUT")
-     * @Template("BigfootImportBundle:DataSource:edit.html.twig")
+     * @Template("BigfootCoreBundle:crud:edit.html.twig")
      */
     public function updateAction(Request $request, $id)
     {
-        $em = $this->getDoctrine()->getManager();
-
-        $entity = $em->getRepository('BigfootImportBundle:DataSource')->find($id);
-
-        if (!$entity) {
-            throw $this->createNotFoundException('Unable to find DataSource entity.');
-        }
-
-        $deleteForm = $this->createDeleteForm($id);
-        $editForm = $this->createForm(new DataSourceType(), $entity);
-        $editForm->submit($request);
-
-        if ($editForm->isValid()) {
-            $em->persist($entity);
-            $em->flush();
-
-            return $this->redirect($this->generateUrl('admin_datasource_edit', array('id' => $id)));
-        }
-
-        return array(
-            'entity'      => $entity,
-            'edit_form'   => $editForm->createView(),
-            'delete_form' => $deleteForm->createView(),
-        );
+        return $this->doUpdate($request, $id);
     }
     /**
      * Deletes a DataSource entity.
@@ -180,22 +127,7 @@ class DataSourceController extends Controller
      */
     public function deleteAction(Request $request, $id)
     {
-        $form = $this->createDeleteForm($id);
-        $form->submit($request);
-
-        if ($form->isValid()) {
-            $em = $this->getDoctrine()->getManager();
-            $entity = $em->getRepository('BigfootImportBundle:DataSource')->find($id);
-
-            if (!$entity) {
-                throw $this->createNotFoundException('Unable to find DataSource entity.');
-            }
-
-            $em->remove($entity);
-            $em->flush();
-        }
-
-        return $this->redirect($this->generateUrl('admin_datasource'));
+        return $this->doDelete($request, $id);
     }
 
     /**
@@ -205,9 +137,9 @@ class DataSourceController extends Controller
      *
      * @return \Symfony\Component\Form\Form The form
      */
-    private function createDeleteForm($id)
+    protected function createDeleteForm($id)
     {
-        return $this->createFormBuilder(array('id' => $id))
+        return $this->container->get('form.factory')->createBuilder('form', array('id' => $id))
             ->add('id', 'hidden')
             ->getForm()
         ;
