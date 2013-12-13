@@ -108,7 +108,7 @@ class XmlMapper
                                         if ($oldElements != null) {
                                             foreach ($oldElements as $oldElement) {
                                                 $$objectName->$typeDescription['clear']['removeFunction']($oldElement);
-                                                $em->remove($oldElement);
+                                                //$em->remove($oldElement);
                                             }
                                         }
                                     }

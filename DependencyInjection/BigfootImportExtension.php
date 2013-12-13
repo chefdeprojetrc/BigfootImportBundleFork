@@ -34,6 +34,7 @@ class BigfootImportExtension extends Extension
             $config['datasource']['protocols'] = array(
                 'ftp' => "FTP",
                 'http' => "HTTP",
+                'https' => "HTTPS",
             );
         }
         $container->setParameter('import.datasource.protocols', $config['datasource']['protocols']);
