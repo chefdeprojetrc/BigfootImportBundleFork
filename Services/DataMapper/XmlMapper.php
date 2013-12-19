@@ -75,7 +75,15 @@ class XmlMapper
                 $$objectName = null;
                 if (isset($description['key'])) {
                     // We attempt to retrieve an existing object corresponding to XML data
-                    $key = $xmlElement->xpath($description['key']['xmlKey']);
+                    if ((string)$description['key']['xmlKey'] == '@uniqueId') {
+                        $uniqueId = $xmlElement->xpath('@id');
+                        $nodeParent = $xmlElement->xpath('../..');
+                        $key = array(0 => $nodeParent[0]->getName().'-'.(string)$uniqueId[0]);
+//                        echo $nodeParent[0]->getName().'-'.(string)$uniqueId[0];
+                    }
+                    else {
+                        $key = $xmlElement->xpath($description['key']['xmlKey']);
+                    }
                     // If xmlKey not found in XMl Data, there's no object to create. So we return null
                     if (!isset($key[0])) {
                         return null;
@@ -127,11 +135,20 @@ class XmlMapper
                             }
                         }
                     } else {
-                        if ( count($xmlElement->xpath($xpath)) == 0) {
-                            $$objectName->$function(null);
-                        } else {
-                            $path = $xmlElement->xpath($xpath);
-                            $$objectName->$function((string) $path[0]);
+
+                        if ((string)$xpath == '@uniqueId') {
+                            $uniqueId = $xmlElement->xpath('@id');
+                            $nodeParent = $xmlElement->xpath('../..');
+                            $$objectName->$function((string)$nodeParent[0]->getName());
+                            $$objectName->setUniqueId($nodeParent[0]->getName().'-'.(string)$uniqueId[0]);
+                        }
+                        else {
+                            if ( count($xmlElement->xpath($xpath)) == 0) {
+                                $$objectName->$function(null);
+                            } else {
+                                $path = $xmlElement->xpath($xpath);
+                                $$objectName->$function((string) $path[0]);
+                            }
                         }
                     }
                 }
