@@ -97,7 +97,7 @@ class XmlMapper
                 elseif(!array_key_exists('nullable',$description) || $description['nullable'] == false) {
                     $$objectName = new $description['class']();
                 } 
-                // If parameter nullable set to false, we do not create a new object if we can't find one
+                // If parameter nullable set to true, we do not create a new object if we can't find one
                 else {
                     return false;
                 }
