@@ -15,7 +15,7 @@
         }
     ],
     "require": {
-        "bigfoot/core-bundle": "dev-master"
+        "bigfoot/core-bundle": "~1.0"
     },
     "autoload": {
         "psr-0": { "Bigfoot\\Bundle\\ImportBundle": "" }
