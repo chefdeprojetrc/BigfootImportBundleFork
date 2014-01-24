@@ -2,30 +2,45 @@
 
 namespace Bigfoot\Bundle\ImportBundle\Listener;
 
+use Symfony\Component\EventDispatcher\GenericEvent;
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+
 use Bigfoot\Bundle\CoreBundle\Event\MenuEvent;
-use Bigfoot\Bundle\CoreBundle\Theme\Menu\Item;
 
 /**
- * Class MenuListener
- * @package Bigfoot\Bundle\ImportBundle\Listener
+ * Menu Listener
  */
-class MenuListener
+class MenuListener implements EventSubscriberInterface
 {
     /**
-     * Add entry to the sidebar menu
+     * Get subscribed events
      *
-     * @param MenuEvent $event
+     * @return array
      */
-    function onMenuGenerate(MenuEvent $event)
+    public static function getSubscribedEvents()
     {
-        $menu = $event->getMenu();
+        return array(
+            MenuEvent::GENERATE_MAIN => 'onGenerateMain',
+        );
+    }
 
-        if ($menu->getName() == 'sidebar_menu') {
-            $importMenu = new Item('sidebar_settings_import', 'Imports');
-            $importMenu->addChild(new Item('sidebar_settings_import', 'Datasources','admin_datasource'));
-            $menu->addItem($importMenu);
-        }
+    /**
+     * @param GenericEvent $event
+     */
+    public function onGenerateMain(GenericEvent $event)
+    {
+        $menu      = $event->getSubject();
+        $fluxMenu = $menu->getChild('flux');
+
+        $fluxMenu->addChild(
+            'import',
+            array(
+                'label'  => 'Imports',
+                'route'  => 'admin_datasource',
+                'linkAttributes' => array(
+                    'icon' => 'level-down',
+                )
+            )
+        );
     }
 }
-
-
