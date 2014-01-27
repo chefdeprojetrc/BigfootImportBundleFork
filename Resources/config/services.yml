@@ -11,21 +11,20 @@ services:
         class: '%bigfoot_import.csvparser.class%'
     bigfoot_import.xmlmapper:
         class: '%bigfoot_import.xmlmapper.class%'
-
     form.type.protocol:
         class: Bigfoot\Bundle\ImportBundle\Form\ProtocolType
         arguments:
             - "%import.datasource.protocols%"
         tags:
             - { name: form.type, alias: protocol }
-
-    kernel.listener.bigfoot_import_menu_listener:
-        class: Bigfoot\Bundle\ImportBundle\Listener\MenuListener
-        tags:
-            - { name: kernel.event_listener, event: bigfoot.menu.generate, method: onMenuGenerate }
-
     bigfoot_bundle_importbundle_datasourcetype:
         class: '%bigfoot_import.datasourcetype.class%'
         arguments: [@service_container]
         tags:
             - { name: form.type, alias: bigfoot_bundle_importbundle_datasourcetype}
+
+    # Menu Listener
+    bigfoot_import.listener.menu:
+        class: Bigfoot\Bundle\ImportBundle\Listener\MenuListener
+        tags:
+            - { name: kernel.event_subscriber }
