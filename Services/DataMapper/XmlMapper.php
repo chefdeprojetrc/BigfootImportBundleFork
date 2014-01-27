@@ -43,7 +43,6 @@ class XmlMapper
      */
     public function map(\SimpleXMLElement $xmlElement)
     {
-
         if ($this->mappingInfo == null || !is_array($this->mappingInfo)) {
             echo "Mapping schema isn't valid.\nPlease load a valid mapping schema before performing an import.\n";
             return null;
@@ -90,13 +89,16 @@ class XmlMapper
                     }
                     $oldObject = $em->getRepository($description['repository'])->findOneBy(array($description['key']['keyName'] => $key[0]));
                 }
+                if (isset($description['oneToOne'])) {
+                    $oldObject = $em->getRepository($description['repository'])->findOneBy(array($description['oneToOne']['columnName'] => $parentElement));
+                }
 
                 if (!is_null($oldObject)) {
                     $$objectName = $oldObject;
                 }
                 elseif(!array_key_exists('nullable',$description) || $description['nullable'] == false) {
                     $$objectName = new $description['class']();
-                } 
+                }
                 // If parameter nullable set to true, we do not create a new object if we can't find one
                 else {
                     return false;
