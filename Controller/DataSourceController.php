@@ -132,19 +132,4 @@ class DataSourceController extends CrudController
     {
         return $this->doDelete($request, $id);
     }
-
-    /**
-     * Creates a form to delete a DataSource entity by id.
-     *
-     * @param mixed $id The entity id
-     *
-     * @return \Symfony\Component\Form\Form The form
-     */
-    protected function createDeleteForm($id)
-    {
-        return $this->container->get('form.factory')->createBuilder('form', array('id' => $id))
-            ->add('id', 'hidden')
-            ->getForm()
-        ;
-    }
 }
