@@ -43,7 +43,6 @@ class XmlMapper
      */
     public function map(\SimpleXMLElement $xmlElement)
     {
-
         if ($this->mappingInfo == null || !is_array($this->mappingInfo)) {
             echo "Mapping schema isn't valid.\nPlease load a valid mapping schema before performing an import.\n";
             return null;
@@ -74,21 +73,44 @@ class XmlMapper
                 $oldObject = null;
                 $$objectName = null;
                 if (isset($description['key'])) {
-                    // We attempt to retrieve an existing object corresponding to XML data
-                    if ((string)$description['key']['xmlKey'] == '@uniqueId') {
-                        $uniqueId = $xmlElement->xpath('@id');
-                        $nodeParent = $xmlElement->xpath('../..');
-                        $key = array(0 => $nodeParent[0]->getName().'-'.(string)$uniqueId[0]);
-//                        echo $nodeParent[0]->getName().'-'.(string)$uniqueId[0];
+                    // Multiple key
+                    if (is_array($description['key']['xmlKey'])) {
+                        $keys = array();
+                        foreach($description['key']['xmlKey'] as $id => $key) {
+                            $tmpKey = $xmlElement->xpath($key);
+                            $keys[$description['key']['keyName'][$id]] = $tmpKey[0];
+                        }
+                    } else {
+                        // We attempt to retrieve an existing object corresponding to XML data
+                        if ((string)$description['key']['xmlKey'] == '@uniqueId') {
+                            $uniqueId = $xmlElement->xpath('@id');
+                            $nodeParent = $xmlElement->xpath('../..');
+                            $keys = array(0 => $nodeParent[0]->getName().'-'.(string)$uniqueId[0]);
+                        }
+                        else {
+                            $keys = $xmlElement->xpath($description['key']['xmlKey']);
+                        }
                     }
-                    else {
-                        $key = $xmlElement->xpath($description['key']['xmlKey']);
+
+                    // If there is a findFunction, use it instead of findOneBy
+                    if(isset($description['key']['findFunction'])) {
+                        $findFunction = $description['key']['findFunction'];
+                    } else {
+                        $findFunction = 'findOneBy';
                     }
+
                     // If xmlKey not found in XMl Data, there's no object to create. So we return null
-                    if (!isset($key[0])) {
+                    if (!isset($description['key']['xmlKey'])) {
                         return null;
+                    } elseif(is_array($description['key']['xmlKey'])) {
+                        $oldObject = $em->getRepository($description['repository'])->$findFunction($keys);
+                    } else{
+                        $oldObject = $em->getRepository($description['repository'])->$findFunction(array($description['key']['keyName'] => $keys[0]));
                     }
-                    $oldObject = $em->getRepository($description['repository'])->findOneBy(array($description['key']['keyName'] => $key[0]));
+
+                }
+                if (isset($description['oneToOne'])) {
+                    $oldObject = $em->getRepository($description['repository'])->findOneBy(array($description['oneToOne']['columnName'] => $parentElement));
                 }
 
                 if (!is_null($oldObject)) {
@@ -96,7 +118,7 @@ class XmlMapper
                 }
                 elseif(!array_key_exists('nullable',$description) || $description['nullable'] == false) {
                     $$objectName = new $description['class']();
-                } 
+                }
                 // If parameter nullable set to true, we do not create a new object if we can't find one
                 else {
                     return false;
