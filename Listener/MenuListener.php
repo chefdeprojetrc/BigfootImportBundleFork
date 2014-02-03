@@ -29,7 +29,7 @@ class MenuListener implements EventSubscriberInterface
      */
     public function onGenerateMain(GenericEvent $event)
     {
-        $menu      = $event->getSubject();
+        $menu     = $event->getSubject();
         $fluxMenu = $menu->getChild('flux');
 
         $fluxMenu->addChild(
@@ -37,6 +37,12 @@ class MenuListener implements EventSubscriberInterface
             array(
                 'label'  => 'Imports',
                 'route'  => 'admin_datasource',
+                'extras' => array(
+                    'routes' => array(
+                        'admin_datasource_new',
+                        'admin_datasource_edit'
+                    )
+                ),
                 'linkAttributes' => array(
                     'icon' => 'level-down',
                 )

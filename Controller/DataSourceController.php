@@ -72,7 +72,6 @@ class DataSourceController extends CrudController
      *
      * @Route("/", name="admin_datasource")
      * @Method("GET")
-     * @Template("BigfootCoreBundle:crud:index.html.twig")
      */
     public function indexAction()
     {
@@ -84,7 +83,6 @@ class DataSourceController extends CrudController
      *
      * @Route("/", name="admin_datasource_create")
      * @Method("POST")
-     * @Template("BigfootCoreBundle:crud:new.html.twig")
      */
     public function createAction(Request $request)
     {
@@ -96,7 +94,6 @@ class DataSourceController extends CrudController
      *
      * @Route("/new", name="admin_datasource_new")
      * @Method("GET")
-     * @Template("BigfootCoreBundle:crud:new.html.twig")
      */
     public function newAction()
     {
@@ -108,7 +105,6 @@ class DataSourceController extends CrudController
      *
      * @Route("/{id}/edit", name="admin_datasource_edit")
      * @Method("GET")
-     * @Template("BigfootCoreBundle:crud:edit.html.twig")
      */
     public function editAction($id)
     {
@@ -119,8 +115,7 @@ class DataSourceController extends CrudController
      * Edits an existing DataSource entity.
      *
      * @Route("/{id}", name="admin_datasource_update")
-     * @Method("PUT")
-     * @Template("BigfootCoreBundle:crud:edit.html.twig")
+     * @Method("GET|POST|PUT")
      */
     public function updateAction(Request $request, $id)
     {
@@ -130,8 +125,8 @@ class DataSourceController extends CrudController
     /**
      * Deletes a DataSource entity.
      *
-     * @Route("/{id}", name="admin_datasource_delete")
-     * @Method("DELETE")
+     * @Route("/{id}/delete", name="admin_datasource_delete")
+     * @Method("GET|DELETE")
      */
     public function deleteAction(Request $request, $id)
     {
