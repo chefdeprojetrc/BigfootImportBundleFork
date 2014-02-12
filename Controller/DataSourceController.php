@@ -19,7 +19,7 @@ use Bigfoot\Bundle\ImportBundle\Form\DataSourceType;
  * DataSource controller.
  *
  * @Cache(maxage="0", smaxage="0", public="false")
- * @Route("/admin/datasource")
+ * @Route("/datasource")
  */
 class DataSourceController extends CrudController
 {
@@ -53,12 +53,12 @@ class DataSourceController extends CrudController
     protected function getFields()
     {
         return array(
-            'id'        => 'ID',
-            'username'  => 'Name',
-            'domain'    => 'Domain',
-            'port'      => 'Port',
-            'username'  => 'Username',
-            'password'  => 'Password',
+            'id'       => 'ID',
+            'username' => 'Name',
+            'domain'   => 'Domain',
+            'port'     => 'Port',
+            'username' => 'Username',
+            'password' => 'Password',
         );
     }
 
@@ -71,7 +71,6 @@ class DataSourceController extends CrudController
      * Lists all DataSource entities.
      *
      * @Route("/", name="admin_datasource")
-     * @Method("GET")
      */
     public function indexAction()
     {
@@ -79,54 +78,29 @@ class DataSourceController extends CrudController
     }
 
     /**
-     * Creates a new DataSource entity.
-     *
-     * @Route("/", name="admin_datasource_create")
-     * @Method("POST")
-     */
-    public function createAction(Request $request)
-    {
-        return $this->doCreate($request);
-    }
-
-    /**
      * Displays a form to create a new DataSource entity.
      *
      * @Route("/new", name="admin_datasource_new")
-     * @Method("GET")
      */
-    public function newAction()
+    public function newAction(Request $request)
     {
-        return $this->doNew();
+        return $this->doNew($request);
     }
 
     /**
      * Displays a form to edit an existing DataSource entity.
      *
-     * @Route("/{id}/edit", name="admin_datasource_edit")
-     * @Method("GET")
+     * @Route("/edit/{id}", name="admin_datasource_edit")
      */
-    public function editAction($id)
+    public function editAction(Request $request, $id)
     {
-        return $this->doEdit($id);
-    }
-
-    /**
-     * Edits an existing DataSource entity.
-     *
-     * @Route("/{id}", name="admin_datasource_update")
-     * @Method("GET|POST|PUT")
-     */
-    public function updateAction(Request $request, $id)
-    {
-        return $this->doUpdate($request, $id);
+        return $this->doEdit($request, $id);
     }
 
     /**
      * Deletes a DataSource entity.
      *
-     * @Route("/{id}/delete", name="admin_datasource_delete")
-     * @Method("GET|DELETE")
+     * @Route("/delete/{id}", name="admin_datasource_delete")
      */
     public function deleteAction(Request $request, $id)
     {
