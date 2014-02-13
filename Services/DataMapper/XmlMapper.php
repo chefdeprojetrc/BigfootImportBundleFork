@@ -100,7 +100,7 @@ class XmlMapper
                     }
 
                     // If xmlKey not found in XMl Data, there's no object to create. So we return null
-                    if (!isset($description['key']['xmlKey'])) {
+                    if (!isset($keys[0])) {
                         return null;
                     } elseif(is_array($description['key']['xmlKey'])) {
                         $oldObject = $em->getRepository($description['repository'])->$findFunction($keys);
@@ -143,7 +143,10 @@ class XmlMapper
                                         if ($oldElements != null) {
                                             foreach ($oldElements as $oldElement) {
                                                 $$objectName->$typeDescription['clear']['removeFunction']($oldElement);
-                                                //$em->remove($oldElement);
+                                                if(isset($typeDescription['clear']['removeChild']) && $typeDescription['clear']['removeChild'])
+                                                {
+                                                    $em->remove($oldElement);
+                                                }
                                             }
                                         }
                                     }
