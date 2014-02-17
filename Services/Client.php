@@ -11,14 +11,11 @@ namespace Bigfoot\Bundle\ImportBundle\Services;
 class Client
 {
     protected $domain;
-
     protected $port;
-
     protected $username;
-
     protected $password;
-
     protected $protocol;
+    protected $distantDirectory = null;
 
     /**
      * Initialize the Client
@@ -46,6 +43,11 @@ class Client
         $this->password = $password;
     }
 
+    public function setDistantDirectory($distantDirectory)
+    {
+        $this->distantDirectory = $distantDirectory;
+    }
+
     /**
      * Get the distant file by Curl Method
      *
@@ -55,8 +57,19 @@ class Client
      */
     public function get($uri, $saveInFile = true)
     {
-        $url      = sprintf("%s://%s/%s", $this->protocol, ($this->port > 0) ? $this->domain.':'.$this->port : $this->domain, trim($uri, '/'));
 
+        if ($this->port > 0) {
+            $domain = $this->domain.':'.$this->port;
+        }
+        else {
+            $domain = $this->domain;
+        }
+
+        if ($this->distantDirectory) {
+            $domain .= '/'.$this->distantDirectory;
+        }
+
+        $url  = sprintf("%s://%s/%s", $this->protocol, $domain, trim($uri, '/'));
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_URL, $url);
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);

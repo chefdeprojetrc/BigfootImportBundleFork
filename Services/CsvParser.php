@@ -48,7 +48,6 @@ class CsvParser
     public function parse($uri)
     {
         $filename = $this->client->get($uri);
-
         $csvData = file_get_contents($filename);
         $csvLines = explode("\n", $csvData);
 
