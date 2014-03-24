@@ -23,9 +23,10 @@ services:
         tags:
             - { name: form.type, alias: bigfoot_bundle_importbundle_datasourcetype}
 
-    # Menu Listener
-    bigfoot_import.listener.menu:
-        class: Bigfoot\Bundle\ImportBundle\Listener\MenuListener
-        arguments: [@security.context]
+    # Menu Subscriber
+    bigfoot_import.subscriber.menu:
+        class: Bigfoot\Bundle\ImportBundle\Subscriber\MenuSubscriber
+        arguments:
+            - @security.context
         tags:
             - { name: kernel.event_subscriber }

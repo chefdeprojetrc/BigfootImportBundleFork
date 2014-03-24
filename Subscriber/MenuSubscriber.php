@@ -1,6 +1,6 @@
 <?php
 
-namespace Bigfoot\Bundle\ImportBundle\Listener;
+namespace Bigfoot\Bundle\ImportBundle\Subscriber;
 
 use Symfony\Component\EventDispatcher\GenericEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -9,9 +9,9 @@ use Bigfoot\Bundle\CoreBundle\Event\MenuEvent;
 use Symfony\Component\Security\Core\SecurityContextInterface;
 
 /**
- * Menu Listener
+ * Menu Subscriber
  */
-class MenuListener implements EventSubscriberInterface
+class MenuSubscriber implements EventSubscriberInterface
 {
     /**
      * @var \Symfony\Component\Security\Core\SecurityContextInterface
@@ -43,10 +43,28 @@ class MenuListener implements EventSubscriberInterface
      */
     public function onGenerateMain(GenericEvent $event)
     {
-        $menu     = $event->getSubject();
-        $fluxMenu = $menu->getChild('flux');
+        $menu = $event->getSubject();
+        $root = $menu->getRoot();
 
         if ($this->security->isGranted('ROLE_ADMIN')) {
+            $fluxMenu = $root->addChild(
+                'flux',
+                array(
+                    'label'          => 'Flux',
+                    'url'            => '#',
+                    'linkAttributes' => array(
+                        'class' => 'dropdown-toggle',
+                        'icon'  => 'refresh',
+                    )
+                )
+            );
+
+            $fluxMenu->setChildrenAttributes(
+                array(
+                    'class' => 'submenu',
+                )
+            );
+
             $fluxMenu->addChild(
                 'import',
                 array(
