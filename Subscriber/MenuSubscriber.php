@@ -4,9 +4,9 @@ namespace Bigfoot\Bundle\ImportBundle\Subscriber;
 
 use Symfony\Component\EventDispatcher\GenericEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\Security\Core\SecurityContextInterface;
 
 use Bigfoot\Bundle\CoreBundle\Event\MenuEvent;
-use Symfony\Component\Security\Core\SecurityContextInterface;
 
 /**
  * Menu Subscriber
