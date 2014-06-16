@@ -43,44 +43,44 @@ class MenuSubscriber implements EventSubscriberInterface
      */
     public function onGenerateMain(GenericEvent $event)
     {
-        $menu = $event->getSubject();
-        $root = $menu->getRoot();
+        // $menu = $event->getSubject();
+        // $root = $menu->getRoot();
 
-        if ($this->security->isGranted('ROLE_ADMIN')) {
-            $fluxMenu = $root->addChild(
-                'flux',
-                array(
-                    'label'          => 'Flux',
-                    'url'            => '#',
-                    'linkAttributes' => array(
-                        'class' => 'dropdown-toggle',
-                        'icon'  => 'refresh',
-                    )
-                )
-            );
+        // if ($this->security->isGranted('ROLE_ADMIN')) {
+        //     $fluxMenu = $root->addChild(
+        //         'flux',
+        //         array(
+        //             'label'          => 'Flux',
+        //             'url'            => '#',
+        //             'linkAttributes' => array(
+        //                 'class' => 'dropdown-toggle',
+        //                 'icon'  => 'refresh',
+        //             )
+        //         )
+        //     );
 
-            $fluxMenu->setChildrenAttributes(
-                array(
-                    'class' => 'submenu',
-                )
-            );
+        //     $fluxMenu->setChildrenAttributes(
+        //         array(
+        //             'class' => 'submenu',
+        //         )
+        //     );
 
-            $fluxMenu->addChild(
-                'import',
-                array(
-                    'label'  => 'Imports',
-                    'route'  => 'admin_datasource',
-                    'extras' => array(
-                        'routes' => array(
-                            'admin_datasource_new',
-                            'admin_datasource_edit'
-                        )
-                    ),
-                    'linkAttributes' => array(
-                        'icon' => 'level-down',
-                    )
-                )
-            );
-        }
+        //     $fluxMenu->addChild(
+        //         'import',
+        //         array(
+        //             'label'  => 'Imports',
+        //             'route'  => 'admin_datasource',
+        //             'extras' => array(
+        //                 'routes' => array(
+        //                     'admin_datasource_new',
+        //                     'admin_datasource_edit'
+        //                 )
+        //             ),
+        //             'linkAttributes' => array(
+        //                 'icon' => 'level-down',
+        //             )
+        //         )
+        //     );
+        // }
     }
 }
