@@ -43,44 +43,41 @@ class MenuSubscriber implements EventSubscriberInterface
      */
     public function onGenerateMain(GenericEvent $event)
     {
-        // $menu = $event->getSubject();
-        // $root = $menu->getRoot();
+        $builder = $event->getSubject();
 
-        // if ($this->security->isGranted('ROLE_ADMIN')) {
-        //     $fluxMenu = $root->addChild(
-        //         'flux',
-        //         array(
-        //             'label'          => 'Flux',
-        //             'url'            => '#',
-        //             'linkAttributes' => array(
-        //                 'class' => 'dropdown-toggle',
-        //                 'icon'  => 'refresh',
-        //             )
-        //         )
-        //     );
-
-        //     $fluxMenu->setChildrenAttributes(
-        //         array(
-        //             'class' => 'submenu',
-        //         )
-        //     );
-
-        //     $fluxMenu->addChild(
-        //         'import',
-        //         array(
-        //             'label'  => 'Imports',
-        //             'route'  => 'admin_datasource',
-        //             'extras' => array(
-        //                 'routes' => array(
-        //                     'admin_datasource_new',
-        //                     'admin_datasource_edit'
-        //                 )
-        //             ),
-        //             'linkAttributes' => array(
-        //                 'icon' => 'level-down',
-        //             )
-        //         )
-        //     );
-        // }
+        $builder
+            ->addChild(
+                'flux',
+                array(
+                    'label'          => 'Flux',
+                    'url'            => '#',
+                    'linkAttributes' => array(
+                        'class' => 'dropdown-toggle',
+                        'icon'  => 'refresh',
+                    )
+                ),
+                array(
+                    'children-attributes' => array(
+                        'class' => 'submenu'
+                    )
+                )
+            )
+            ->addChildFor(
+                'flux',
+                'imports',
+                array(
+                    'label'  => 'Imports',
+                    'route'  => 'admin_datasource',
+                    'extras' => array(
+                        'routes' => array(
+                            'admin_datasource_new',
+                            'admin_datasource_edit'
+                        )
+                    ),
+                    'linkAttributes' => array(
+                        'icon' => 'level-down',
+                    )
+                )
+            );
     }
 }
