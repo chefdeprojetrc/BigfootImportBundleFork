@@ -51,6 +51,9 @@ class MenuSubscriber implements EventSubscriberInterface
                 array(
                     'label'          => 'Flux',
                     'url'            => '#',
+                    'attributes' => array(
+                        'class' => 'parent',
+                    ),
                     'linkAttributes' => array(
                         'class' => 'dropdown-toggle',
                         'icon'  => 'refresh',
