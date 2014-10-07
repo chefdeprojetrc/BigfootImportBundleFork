@@ -1,6 +1,9 @@
 <?php
+
 namespace Bigfoot\Bundle\ImportBundle\Services\DataMapper;
 
+use Doctrine\ORM\EntityManager;
+use Gedmo\Translatable\Entity\Repository\TranslationRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\Yaml\Yaml;
 
@@ -13,25 +16,31 @@ use Symfony\Component\Yaml\Yaml;
  */
 class XmlMapper
 {
-    private $controller;
+    /** @var \Doctrine\ORM\EntityManager */
+    private $em;
+
+    /** @var array */
     private $mappingInfo;
 
     /**
      * Construct an XmlParser
      *
-     * @param Controller $controller  Controller using the mapper
-     * @param string     $mappingFile URl to yaml file contains mapping informations
+     * @param EntityManager $em
      */
-    public function __construct(Controller $controller, $mappingFile)
+    public function __construct(EntityManager $em)
     {
-        $this->controller = $controller;
+        $this->em = $em;
+    }
 
-        // Chargement de la configuration du mapping
+    /**
+     * @param string $mappingFile
+     * @return $this
+     */
+    public function setMappingInfo($mappingFile)
+    {
         $this->mappingInfo = Yaml::parse(file_get_contents($mappingFile));
 
-        if ($this->mappingInfo == null || !is_array($this->mappingInfo)) {
-            echo "Mapping schema isn't valid.\nImport will not be possible without a valid mapping schema.\n";
-        }
+        return $this;
     }
 
     /**
@@ -44,8 +53,7 @@ class XmlMapper
     public function map(\SimpleXMLElement $xmlElement)
     {
         if ($this->mappingInfo == null || !is_array($this->mappingInfo)) {
-            echo "Mapping schema isn't valid.\nPlease load a valid mapping schema before performing an import.\n";
-            return null;
+            throw new \Exception('Import failed: configuration file given couldn\'t be resolved to a valid configuration');
         } else {
             return $this->xmlElementToEntity($this->mappingInfo, $xmlElement);
         }
@@ -63,9 +71,11 @@ class XmlMapper
      */
     private function xmlElementToEntity(array $mapping, \SimpleXMLElement $xmlElement, $parentElement = null)
     {
-        $em = $this->controller->getDoctrine()->getManager();
+        $em = $this->em;
         $em->getConnection()->getConfiguration()->setSQLLogger(null);
 
+        /** @var TranslationRepository $repository */
+        $repository = $em->getRepository('Gedmo\\Translatable\\Entity\\Translation');
         $description = $mapping[key($mapping)];
 
         if (is_array($description)) {
@@ -125,7 +135,6 @@ class XmlMapper
             foreach ($description['mapping'] as $function => $xpath) {
                 if (is_array($xpath)) {
                     if (isset($xpath['languages'])) {
-                        $repository = $em->getRepository('Gedmo\\Translatable\\Entity\\Translation');
                         foreach ($xpath['languages'] as $language => $element) {
                             $translation = $xmlElement->xpath($element);
                             if (count($translation) > 0) {
@@ -190,7 +199,6 @@ class XmlMapper
             $em->refresh($object);
 
             return $object;
-
         } else {
             return null;
         }

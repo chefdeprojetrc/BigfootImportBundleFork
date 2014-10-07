@@ -11,6 +11,8 @@ services:
         class: '%bigfoot_import.csvparser.class%'
     bigfoot_import.xmlmapper:
         class: '%bigfoot_import.xmlmapper.class%'
+        arguments:
+            - @doctrine.orm.entity_manager
     form.type.protocol:
         class: Bigfoot\Bundle\ImportBundle\Form\ProtocolType
         arguments:
