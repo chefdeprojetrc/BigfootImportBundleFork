@@ -27,12 +27,12 @@ class XmlIterator implements \Iterator
             $dom = $xml;
         } else {
             $dom = new \DOMDocument();
-            $dom->loadXml($xml);
+            @$dom->loadXml($xml);
         }
 
-        $this->content = $dom;
+        $this->content        = $dom;
         $this->currentContent = $dom;
-        $this->xpath = $xpath;
+        $this->xpath          = $xpath;
     }
 
     /**
