@@ -6,7 +6,7 @@ namespace Bigfoot\Bundle\ImportBundle\Iterator;
  * Class XmlIterator
  * @package Bigfoot\Bundle\ImportBundle\Iterator
  */
-class XmlIterator implements \Iterator
+class XmlIterator implements \Iterator, \Countable
 {
     /** @var \DOMDocument */
     protected $content;
@@ -16,6 +16,9 @@ class XmlIterator implements \Iterator
 
     /** @var string */
     protected $xpath;
+
+    /** @var interger */
+    protected $count;
 
     /**
      * @param string|\DOMDocument $xml
@@ -38,7 +41,7 @@ class XmlIterator implements \Iterator
     /**
      * @inheritdoc
      */
-    function rewind()
+    public function rewind()
     {
         $this->currentContent = $this->content;
     }
@@ -46,7 +49,7 @@ class XmlIterator implements \Iterator
     /**
      * @inheritdoc
      */
-    function current()
+    public function current()
     {
         $currentElement = $this->getCurrentElement();
 
@@ -56,7 +59,7 @@ class XmlIterator implements \Iterator
     /**
      * @inheritdoc
      */
-    function key()
+    public function key()
     {
         return null;
     }
@@ -64,7 +67,7 @@ class XmlIterator implements \Iterator
     /**
      * @inheritdoc
      */
-    function next()
+    public function next()
     {
         $currentElement = $this->getCurrentElement();
         $currentElement->parentNode->removeChild($currentElement);
@@ -73,7 +76,7 @@ class XmlIterator implements \Iterator
     /**
      * @inheritdoc
      */
-    function valid()
+    public function valid()
     {
         return (boolean) $this->getCurrentElement();
     }
@@ -81,7 +84,7 @@ class XmlIterator implements \Iterator
     /**
      * @return \DOMNode|null
      */
-    function getCurrentElement()
+    public function getCurrentElement()
     {
         $xpath = new \DOMXPath($this->currentContent);
         $nodes = $xpath->query($this->getXPath());
@@ -92,9 +95,9 @@ class XmlIterator implements \Iterator
     /**
      * @return string
      */
-    function getXPath()
+    public function getXPath()
     {
-        $xpath = $this->xpath;
+        $xpath  = $this->xpath;
         $suffix = '[1]';
 
         if (strlen($xpath) - strlen($suffix) !== strrpos($xpath, $suffix)) {
@@ -102,5 +105,16 @@ class XmlIterator implements \Iterator
         }
 
         return $xpath;
+    }
+
+    /**
+     * @return integer
+     */
+    public function count()
+    {
+        $xpath = new \DOMXPath($this->currentContent);
+        $nodes = $xpath->query(rtrim($this->xpath, '[1]'));
+
+        return $nodes->length;
     }
 }
