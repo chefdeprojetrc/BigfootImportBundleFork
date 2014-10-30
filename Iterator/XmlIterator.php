@@ -67,7 +67,7 @@ class XmlIterator implements \Iterator
     function next()
     {
         $currentElement = $this->getCurrentElement();
-        $this->currentContent->removeChild($currentElement);
+        $currentElement->parentNode->removeChild($currentElement);
     }
 
     /**

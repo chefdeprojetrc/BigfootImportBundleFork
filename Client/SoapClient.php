@@ -85,6 +85,7 @@ class SoapClient extends \SoapClient
     public function setRequestHeaders($requestHeaders)
     {
         $this->requestHeaders = $requestHeaders;
+
         return $this;
     }
 
@@ -103,6 +104,7 @@ class SoapClient extends \SoapClient
     public function setResponseHeaders($responseHeaders)
     {
         $this->responseHeaders = $responseHeaders;
+
         return $this;
     }
 
@@ -121,6 +123,7 @@ class SoapClient extends \SoapClient
     public function setResponseBody($responseBody)
     {
         $this->responseBody = $responseBody;
+
         return $this;
     }
 
@@ -139,6 +142,7 @@ class SoapClient extends \SoapClient
     public function setRequestInnerXml($requestInnerXml)
     {
         $this->requestInnerXml = $requestInnerXml;
+
         return $this;
     }
 
