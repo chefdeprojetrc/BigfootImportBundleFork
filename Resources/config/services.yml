@@ -3,6 +3,9 @@ parameters:
     bigfoot_import.csvparser.class: 'Bigfoot\Bundle\ImportBundle\Services\CsvParser'
     bigfoot_import.xmlmapper.class: 'Bigfoot\Bundle\ImportBundle\Services\DataMapper\XmlMapper'
     bigfoot_import.datasourcetype.class: 'Bigfoot\Bundle\ImportBundle\Form\DataSourceType'
+    bigfoot_import.data.loader.class: 'Bigfoot\Bundle\ImportBundle\Loader\ImportedDataLoader'
+    bigfoot_import.data.manager.class: 'Bigfoot\Bundle\ImportBundle\Manager\ImportedDataManager'
+    bigfoot_import.data.mapper.class: 'Bigfoot\Bundle\ImportBundle\Mapper\AbstractDataMapper'
 
 services:
     bigfoot_import.client:
@@ -32,3 +35,21 @@ services:
             - @security.context
         tags:
             - { name: kernel.event_subscriber }
+
+    bigfoot_import.data.loader:
+        class: %bigfoot_import.data.loader.class%
+        arguments:
+            - @doctrine.orm.entity_manager
+            - @validator
+
+    bigfoot_import.data.manager:
+        class: %bigfoot_import.data.manager.class%
+        arguments:
+            - @doctrine.orm.entity_manager
+
+    bigfoot_import.data.mapper:
+        class: %bigfoot_import.data.mapper.class%
+        arguments:
+            - @doctrine.orm.entity_manager
+            - @annotation_reader
+            - @bigfoot_core.translation.repository

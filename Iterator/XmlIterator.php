@@ -17,9 +17,6 @@ class XmlIterator implements \Iterator, \Countable
     /** @var string */
     protected $xpath;
 
-    /** @var interger */
-    protected $count;
-
     /**
      * @param string|\DOMDocument $xml
      * @param string $xpath
