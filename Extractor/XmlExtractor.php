@@ -23,8 +23,8 @@ class XmlExtractor
         }
 
         $domXpath = new \DOMXPath($dom);
-        $nodes = $domXpath->query($xpath);
-        $content = '';
+        $nodes    = $domXpath->query($xpath);
+        $content  = '';
 
         /** @var \DOMNode $node */
         foreach ($nodes as $node) {
