@@ -8,7 +8,7 @@ namespace Bigfoot\Bundle\ImportBundle\Iterator;
  */
 class XmlIterator implements \Iterator, \Countable
 {
-    /** @var \DOMDocument */
+    /** @var string */
     protected $content;
 
     /** @var \DOMDocument */
@@ -24,15 +24,13 @@ class XmlIterator implements \Iterator, \Countable
     public function __construct($xml, $xpath)
     {
         if ($xml instanceof \DOMDocument) {
-            $dom = $xml;
+            $this->content = $xml->saveXML();
         } else {
-            $dom = new \DOMDocument();
-            @$dom->loadXml($xml);
+            $this->content = $xml;
         }
 
-        $this->content        = $dom;
-        $this->currentContent = $dom;
-        $this->xpath          = $xpath;
+        $this->xpath = $xpath;
+        $this->rewind();
     }
 
     /**
@@ -40,7 +38,9 @@ class XmlIterator implements \Iterator, \Countable
      */
     public function rewind()
     {
-        $this->currentContent = $this->content;
+        $dom = new \DOMDocument();
+        @$dom->loadXML($this->content);
+        $this->currentContent = $dom;
     }
 
     /**

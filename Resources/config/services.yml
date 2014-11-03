@@ -49,6 +49,7 @@ services:
 
     bigfoot_import.data.mapper:
         class: %bigfoot_import.data.mapper.class%
+        abstract: true
         arguments:
             - @doctrine.orm.entity_manager
             - @annotation_reader

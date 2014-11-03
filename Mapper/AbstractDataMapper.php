@@ -29,6 +29,11 @@ abstract class AbstractDataMapper
         $this->bigfootTransRepo = $bigfootTransRepo;
     }
 
+    /**
+     * @param object $entity
+     * @param string $property
+     * @param array $values
+     */
     protected function translateProperty($entity, $property, $values)
     {
         $em = $this->entityManager;
@@ -46,4 +51,11 @@ abstract class AbstractDataMapper
             $translationRepository->translate($entity, $property, $locale, $value);
         }
     }
+
+    /**
+     * @param object $source
+     * @param object $destination
+     * @return mixed
+     */
+    public abstract function map($source, $destination);
 }
