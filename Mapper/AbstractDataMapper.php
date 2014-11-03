@@ -24,7 +24,7 @@ abstract class AbstractDataMapper
      */
     public function __construct($entityManager, $annotationReader, $bigfootTransRepo)
     {
-        $this->entityManager = $entityManager;
+        $this->entityManager    = $entityManager;
         $this->annotationReader = $annotationReader;
         $this->bigfootTransRepo = $bigfootTransRepo;
     }
@@ -36,12 +36,12 @@ abstract class AbstractDataMapper
      */
     protected function translateProperty($entity, $property, $values)
     {
-        $em = $this->entityManager;
+        $em               = $this->entityManager;
         $bigfootTransRepo = $this->bigfootTransRepo;
         $reflectionClass  = new \ReflectionClass($entity);
         $gedmoAnnotations = $this->annotationReader->getClassAnnotation($reflectionClass, 'Gedmo\\Mapping\\Annotation\\TranslationEntity');
 
-        if($gedmoAnnotations !== null && $gedmoAnnotations->class != '') {
+        if ($gedmoAnnotations !== null && $gedmoAnnotations->class != '') {
             $translationRepository = $bigfootTransRepo;
         } else {
             $translationRepository = $em->getRepository('Gedmo\\Translatable\\Entity\\Translation');
@@ -57,5 +57,5 @@ abstract class AbstractDataMapper
      * @param object $destination
      * @return mixed
      */
-    public abstract function map($source, $destination);
+    abstract public function map($source, $destination);
 }

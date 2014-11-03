@@ -37,8 +37,8 @@ class ImportedDataManager
      */
     public function __construct($entityManager, $validator, $propertyAccessor)
     {
-        $this->entityManager = $entityManager;
-        $this->validator = $validator;
+        $this->entityManager    = $entityManager;
+        $this->validator        = $validator;
         $this->propertyAccessor = $propertyAccessor;
     }
 
@@ -49,6 +49,7 @@ class ImportedDataManager
     public function setBatchSize($batchSize)
     {
         $this->batchSize = $batchSize;
+
         return $this;
     }
 
@@ -63,9 +64,9 @@ class ImportedDataManager
         }
 
         $propertyAccessor = $this->propertyAccessor;
-        $entityClass = get_class($entity);
-        $property = $this->getImportedIdentifier($entityClass);
-        $importedId = $propertyAccessor->getValue($entity, $property);
+        $entityClass      = get_class($entity);
+        $property         = $this->getImportedIdentifier($entityClass);
+        $importedId       = $propertyAccessor->getValue($entity, $property);
 
         if (!isset($this->importedEntities[$entityClass])) {
             $this->importedEntities[$entityClass] = array();
@@ -75,6 +76,7 @@ class ImportedDataManager
 
         $em = $this->entityManager;
         $em->persist($entity);
+
         $this->batch();
 
         return true;
@@ -121,7 +123,7 @@ class ImportedDataManager
         $property = $this->getImportedIdentifier($class);
 
         /** @var ImportedDataRepositoryInterface $repo */
-        $repo = $this->entityManager->getRepository($class);
+        $repo   = $this->entityManager->getRepository($class);
         $entity = $repo->findOneBy(array($property => $key));
 
         if (!$entity && isset($this->importedEntities[$class]) && in_array($this->importedEntities[$class][$key], $this->importedEntities)) {
@@ -150,8 +152,9 @@ class ImportedDataManager
     protected function getImportedId($entity)
     {
         $propertyAccessor = $this->propertyAccessor;
-        $entityClass = get_class($entity);
-        $property = $this->getImportedIdentifier($entityClass);
+        $entityClass      = get_class($entity);
+        $property         = $this->getImportedIdentifier($entityClass);
+
         return $propertyAccessor->getValue($entity, $property);
     }
 }
