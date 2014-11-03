@@ -9,9 +9,7 @@ namespace Bigfoot\Bundle\ImportBundle\Entity;
 interface ImportedDataRepositoryInterface
 {
     /**
-     * @param string $key
-     * @param string $context
-     * @return mixed
+     * @return string
      */
-    public function findImportedData($key, $context);
+    public function getImportedIdentifier();
 }
