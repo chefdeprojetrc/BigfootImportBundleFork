@@ -3,6 +3,7 @@
 namespace Bigfoot\Bundle\ImportBundle\Manager;
 
 use Bigfoot\Bundle\ImportBundle\Entity\ImportedDataRepositoryInterface;
+use Bigfoot\Bundle\ImportBundle\Translation\DataTranslationQueue;
 use Doctrine\ORM\EntityManager;
 use Symfony\Component\PropertyAccess\PropertyAccessor;
 use Symfony\Component\Validator\Validator;
@@ -27,19 +28,37 @@ class ImportedDataManager
     /** @var \Symfony\Component\PropertyAccess\PropertyAccessor */
     protected $propertyAccessor;
 
+    /** @var DataTranslationQueue */
+    protected $translationQueue = array();
+
+    /** @var \Doctrine\Common\Annotations\FileCacheReader */
+    protected $annotationReader;
+
+    /** @var \Bigfoot\Bundle\CoreBundle\Entity\TranslationRepository */
+    protected $bigfootTransRepo;
+
     /** @var array */
     protected $importedEntities = array();
+
+    /** @var string */
+    protected $importedIdentifier;
 
     /**
      * @param \Doctrine\ORM\EntityManager $entityManager
      * @param \Symfony\Component\Validator\Validator $validator
      * @param \Symfony\Component\PropertyAccess\PropertyAccessor $propertyAccessor
+     * @param \Bigfoot\Bundle\ImportBundle\Translation\DataTranslationQueue $translationQueue
+     * @param \Doctrine\Common\Annotations\FileCacheReader $annotationReader
+     * @param \Bigfoot\Bundle\CoreBundle\Entity\TranslationRepository $bigfootTransRepo
      */
-    public function __construct($entityManager, $validator, $propertyAccessor)
+    public function __construct($entityManager, $validator, $propertyAccessor, $translationQueue, $annotationReader, $bigfootTransRepo)
     {
         $this->entityManager    = $entityManager;
         $this->validator        = $validator;
         $this->propertyAccessor = $propertyAccessor;
+        $this->translationQueue = $translationQueue;
+        $this->annotationReader = $annotationReader;
+        $this->bigfootTransRepo = $bigfootTransRepo;
     }
 
     /**
@@ -59,6 +78,10 @@ class ImportedDataManager
      */
     public function load($entity)
     {
+        if (!$this->importedIdentifier) {
+            throw new \Exception('You must declare a property identifier for this data manager. The property identifier must be a accessible property in your entities.');
+        }
+
         if (!$this->validator->validate($entity)) {
             return false;
         }
@@ -85,7 +108,7 @@ class ImportedDataManager
      */
     public function batch()
     {
-        if ($this->iteration++ % $this->batchSize == 0) {
+        if (++$this->iteration % $this->batchSize == 0) {
             $this->flush();
         }
     }
@@ -101,10 +124,12 @@ class ImportedDataManager
      */
     public function flush()
     {
+        $this->processTranslations();
         $em = $this->entityManager;
         $em->flush();
         $em->clear();
         $this->importedEntities = array();
+        $this->translationQueue->clear();
 
         gc_collect_cycles();
     }
@@ -118,9 +143,12 @@ class ImportedDataManager
      */
     public function findExistingEntity($class, $key, $context = null)
     {
+        if (!$this->importedIdentifier) {
+            throw new \Exception('You must declare a property identifier for this data manager. The property identifier must be a accessible property in your entities.');
+        }
+
         $property = $this->getImportedIdentifier($class);
 
-        /** @var ImportedDataRepositoryInterface $repo */
         $repo   = $this->entityManager->getRepository($class);
         $entity = $repo->findOneBy(array($property => $key));
         $entityClass = ltrim($class, '\\');
@@ -136,18 +164,28 @@ class ImportedDataManager
         return $entity;
     }
 
-    protected function getImportedIdentifier($class)
+    /**
+     * @param string $importedIdentifier
+     * @return $this
+     */
+    public function setImportedIdentifier($importedIdentifier)
     {
-        /** @var ImportedDataRepositoryInterface $repo */
-        $repo = $this->entityManager->getRepository($class);
-
-        if (!($repo instanceof ImportedDataRepositoryInterface)) {
-            throw new \Exception('Imported entities managed by this manager must have a repository implementing the Bigfoot\\Bundle\\ImportBundle\\Entity\\ImportedDataRepositoryInterface');
-        }
-
-        return $repo->getImportedIdentifier();
+        $this->importedIdentifier = $importedIdentifier;
+        return $this;
     }
 
+    /**
+     * @return string
+     */
+    public function getImportedIdentifier()
+    {
+        return $this->importedIdentifier;
+    }
+
+    /**
+     * @param $entity
+     * @return mixed
+     */
     protected function getImportedId($entity)
     {
         $propertyAccessor = $this->propertyAccessor;
@@ -155,5 +193,33 @@ class ImportedDataManager
         $property         = $this->getImportedIdentifier($entityClass);
 
         return $propertyAccessor->getValue($entity, $property);
+    }
+
+    protected function processTranslations()
+    {
+        $em               = $this->entityManager;
+        $bigfootTransRepo = $this->bigfootTransRepo;
+
+        foreach ($this->translationQueue->getQueue() as $class => $entities) {
+            foreach ($entities as $locales) {
+                $reflectionClass  = new \ReflectionClass($class);
+                $gedmoAnnotations = $this->annotationReader->getClassAnnotation($reflectionClass, 'Gedmo\\Mapping\\Annotation\\TranslationEntity');
+
+                if ($gedmoAnnotations !== null && $gedmoAnnotations->class != '') {
+                    $translationRepository = $bigfootTransRepo;
+                } else {
+                    $translationRepository = $em->getRepository('Gedmo\\Translatable\\Entity\\Translation');
+                }
+
+                foreach ($locales as $locale => $properties) {
+                    foreach ($properties as $property => $values) {
+                        $entity = $values['entity'];
+                        $content = $values['content'];
+
+                        $translationRepository->translate($entity, $property, $locale, $content);
+                    }
+                }
+            }
+        }
     }
 }

@@ -2,6 +2,8 @@
 
 namespace Bigfoot\Bundle\ImportBundle\Mapper;
 
+use Gedmo\Translatable\Entity\Translation;
+
 /**
  * Class AbstractDataMapper
  * @package Bigfoot\Bundle\ImportBundle\Mapper
@@ -11,22 +13,17 @@ abstract class AbstractDataMapper
     /** @var \Doctrine\ORM\EntityManager */
     protected $entityManager;
 
-    /** @var \Doctrine\Common\Annotations\FileCacheReader */
-    protected $annotationReader;
-
-    /** @var \Bigfoot\Bundle\CoreBundle\Entity\TranslationRepository */
-    protected $bigfootTransRepo;
+    /** @var \Bigfoot\Bundle\ImportBundle\Translation\DataTranslationQueue */
+    protected $translationQueue;
 
     /**
      * @param \Doctrine\ORM\EntityManager $entityManager
-     * @param \Doctrine\Common\Annotations\FileCacheReader $annotationReader
-     * @param \Bigfoot\Bundle\CoreBundle\Entity\TranslationRepository $bigfootTransRepo
+     * @param \Bigfoot\Bundle\ImportBundle\Translation\DataTranslationQueue $translationQueue
      */
-    public function __construct($entityManager, $annotationReader, $bigfootTransRepo)
+    public function __construct($entityManager, $translationQueue)
     {
         $this->entityManager    = $entityManager;
-        $this->annotationReader = $annotationReader;
-        $this->bigfootTransRepo = $bigfootTransRepo;
+        $this->translationQueue = $translationQueue;
     }
 
     /**
@@ -36,19 +33,8 @@ abstract class AbstractDataMapper
      */
     protected function translateProperty($entity, $property, $values)
     {
-        $em               = $this->entityManager;
-        $bigfootTransRepo = $this->bigfootTransRepo;
-        $reflectionClass  = new \ReflectionClass($entity);
-        $gedmoAnnotations = $this->annotationReader->getClassAnnotation($reflectionClass, 'Gedmo\\Mapping\\Annotation\\TranslationEntity');
-
-        if ($gedmoAnnotations !== null && $gedmoAnnotations->class != '') {
-            $translationRepository = $bigfootTransRepo;
-        } else {
-            $translationRepository = $em->getRepository('Gedmo\\Translatable\\Entity\\Translation');
-        }
-
         foreach ($values as $locale => $value) {
-            $translationRepository->translate($entity, $property, $locale, $value);
+            $this->translationQueue->add($entity, $property, $locale, $value);
         }
     }
 

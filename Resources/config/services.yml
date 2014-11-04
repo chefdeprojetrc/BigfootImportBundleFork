@@ -6,6 +6,7 @@ parameters:
     bigfoot_import.data.loader.class: 'Bigfoot\Bundle\ImportBundle\Loader\ImportedDataLoader'
     bigfoot_import.data.manager.class: 'Bigfoot\Bundle\ImportBundle\Manager\ImportedDataManager'
     bigfoot_import.data.mapper.class: 'Bigfoot\Bundle\ImportBundle\Mapper\AbstractDataMapper'
+    bigfoot_import.translation.queue.class: 'Bigfoot\Bundle\ImportBundle\Translation\DataTranslationQueue'
 
 services:
     bigfoot_import.client:
@@ -42,11 +43,16 @@ services:
             - @doctrine.orm.entity_manager
             - @validator
             - @property_accessor
+            - @bigfoot_import.translation.queue
+            - @annotation_reader
+            - @bigfoot_core.translation.repository
 
     bigfoot_import.data.mapper:
         class: %bigfoot_import.data.mapper.class%
         abstract: true
         arguments:
             - @doctrine.orm.entity_manager
-            - @annotation_reader
-            - @bigfoot_core.translation.repository
+            - @bigfoot_import.translation.queue
+
+    bigfoot_import.translation.queue:
+        class: %bigfoot_import.translation.queue.class%
