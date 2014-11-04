@@ -64,20 +64,18 @@ class ImportedDataManager
         }
 
         $propertyAccessor = $this->propertyAccessor;
-        $entityClass      = get_class($entity);
-        $property         = $this->getImportedIdentifier($entityClass);
-        $importedId       = $propertyAccessor->getValue($entity, $property);
+        $entityClass = ltrim(get_class($entity), '\\');
+        $property = $this->getImportedIdentifier($entityClass);
+        $importedId = $propertyAccessor->getValue($entity, $property);
 
         if (!isset($this->importedEntities[$entityClass])) {
             $this->importedEntities[$entityClass] = array();
         }
 
-        $this->importedEntities[$entityClass][] = $importedId;
+        $this->importedEntities[$entityClass][$importedId] = $entity;
 
         $em = $this->entityManager;
         $em->persist($entity);
-
-        $this->batch();
 
         return true;
     }
@@ -87,7 +85,7 @@ class ImportedDataManager
      */
     public function batch()
     {
-        if ($this->iteration++ % $this->batchSize) {
+        if ($this->iteration++ % $this->batchSize == 0) {
             $this->flush();
         }
     }
@@ -96,7 +94,6 @@ class ImportedDataManager
     {
         $this->flush();
         $this->iteration = 0;
-        $this->importedEntities = array();
     }
 
     /**
@@ -107,6 +104,7 @@ class ImportedDataManager
         $em = $this->entityManager;
         $em->flush();
         $em->clear();
+        $this->importedEntities = array();
 
         gc_collect_cycles();
     }
@@ -125,9 +123,10 @@ class ImportedDataManager
         /** @var ImportedDataRepositoryInterface $repo */
         $repo   = $this->entityManager->getRepository($class);
         $entity = $repo->findOneBy(array($property => $key));
+        $entityClass = ltrim($class, '\\');
 
-        if (!$entity && isset($this->importedEntities[$class]) && in_array($this->importedEntities[$class][$key], $this->importedEntities)) {
-            $entity = $this->importedEntities;
+        if (!$entity && isset($this->importedEntities[$entityClass]) && isset($this->importedEntities[$entityClass][$key])) {
+            $entity = $this->importedEntities[$entityClass][$key];
         }
 
         if (!$entity) {
