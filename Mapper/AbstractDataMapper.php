@@ -44,4 +44,9 @@ abstract class AbstractDataMapper
      * @return mixed
      */
     abstract public function map($source, $destination);
+
+    /**
+     * @return string
+     */
+    abstract public function getName();
 }
