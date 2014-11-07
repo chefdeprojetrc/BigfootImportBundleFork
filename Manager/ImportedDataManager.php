@@ -148,10 +148,17 @@ class ImportedDataManager
         }
 
         $property = $this->getImportedIdentifier($class);
-
-        $repo   = $this->entityManager->getRepository($class);
-        $entity = $repo->findOneBy(array($property => $key));
         $entityClass = ltrim($class, '\\');
+
+        $entity = null;
+        if (isset($this->importedEntities[$entityClass]) && isset($this->importedEntities[$entityClass][$key])) {
+            $entity = $this->importedEntities[$entityClass][$key];
+        }
+
+        if (!$entity) {
+            $repo   = $this->entityManager->getRepository($class);
+            $entity = $repo->findOneBy(array($property => $key));
+        }
 
         if (!$entity && isset($this->importedEntities[$entityClass]) && isset($this->importedEntities[$entityClass][$key])) {
             $entity = $this->importedEntities[$entityClass][$key];
