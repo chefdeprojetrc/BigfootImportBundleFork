@@ -17,11 +17,15 @@ class XmlIterator implements \Iterator, \Countable
     /** @var string */
     protected $xpath;
 
+    /** @var array */
+    protected $namespaces;
+
     /**
      * @param string|\DOMDocument $xml
      * @param string $xpath
+     * @param array $namespaces
      */
-    public function __construct($xml, $xpath)
+    public function __construct($xml, $xpath, $namespaces = array())
     {
         if ($xml instanceof \DOMDocument) {
             $this->content = $xml->saveXML();
@@ -30,6 +34,7 @@ class XmlIterator implements \Iterator, \Countable
         }
 
         $this->xpath = $xpath;
+        $this->namespaces = $namespaces;
         $this->rewind();
     }
 
@@ -84,6 +89,11 @@ class XmlIterator implements \Iterator, \Countable
     public function getCurrentElement()
     {
         $xpath = new \DOMXPath($this->currentContent);
+
+        foreach ($this->namespaces as $prefix => $namespace) {
+            $xpath->registerNamespace($prefix, $namespace);
+        }
+
         $nodes = $xpath->query($this->getXPath());
 
         return $nodes->length ? $nodes->item(0) : null;
@@ -110,8 +120,36 @@ class XmlIterator implements \Iterator, \Countable
     public function count()
     {
         $xpath = new \DOMXPath($this->currentContent);
+
+        foreach ($this->namespaces as $prefix => $namespace) {
+            $xpath->registerNamespace($prefix, $namespace);
+        }
+
         $nodes = $xpath->query(rtrim($this->xpath, '[1]'));
 
         return $nodes->length;
+    }
+
+    /**
+     * @param array $namespaces
+     * @return $this
+     */
+    public function setNamespaces(array $namespaces)
+    {
+        $this->namespaces = $namespaces;
+
+        return $this;
+    }
+
+    /**
+     * @param string $prefix
+     * @param string $namespace
+     * @return $this
+     */
+    public function addNamespace($prefix, $namespace)
+    {
+        $this->namespaces[$prefix] = $namespace;
+
+        return $this;
     }
 }

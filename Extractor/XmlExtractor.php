@@ -11,9 +11,10 @@ class XmlExtractor
     /**
      * @param string|\DOMDocument $input
      * @param string $xpath
+     * @param array $namespaces
      * @return string
      */
-    public static function extract(&$input, $xpath)
+    public static function extract(&$input, $xpath, $namespaces = array())
     {
         if ($input instanceof \DOMDocument) {
             $dom = $input;
@@ -23,6 +24,11 @@ class XmlExtractor
         }
 
         $domXpath = new \DOMXPath($dom);
+
+        foreach ($namespaces as $prefix => $namespace) {
+            $domXpath->registerNamespace($prefix, $namespace);
+        }
+
         $nodes    = $domXpath->query($xpath);
         $content  = '';
 
