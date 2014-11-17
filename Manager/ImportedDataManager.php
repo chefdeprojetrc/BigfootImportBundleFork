@@ -146,7 +146,7 @@ class ImportedDataManager
      * @return mixed
      * @throws \Exception
      */
-    public function findExistingEntity($class, $key, $context = null)
+    public function findExistingEntity($class, $key, $repoMethod = 'findOneBy')
     {
         if (!$this->importedIdentifier) {
             throw new \Exception('You must declare a property identifier for this data manager. The property identifier must be a accessible property in your entities.');
@@ -156,13 +156,14 @@ class ImportedDataManager
         $entityClass = ltrim($class, '\\');
 
         $entity = null;
+
         if (isset($this->importedEntities[$entityClass]) && isset($this->importedEntities[$entityClass][$key])) {
             $entity = $this->importedEntities[$entityClass][$key];
         }
 
         if (!$entity) {
             $repo   = $this->entityManager->getRepository($class);
-            $entity = $repo->findOneBy(array($property => $key));
+            $entity = $repo->$repoMethod(array($property => $key));
         }
 
         if (!$entity && isset($this->importedEntities[$entityClass]) && isset($this->importedEntities[$entityClass][$key])) {
