@@ -89,7 +89,12 @@ class ImportedDataManager
         $propertyAccessor = $this->propertyAccessor;
         $entityClass = ltrim(get_class($entity), '\\');
         $property = $this->getImportedIdentifier($entityClass);
-        $importedId = $propertyAccessor->getValue($entity, $property);
+
+        try {
+            $importedId = $propertyAccessor->getValue($entity, $property);
+        } catch (\Exception $e) {
+            $importedId = spl_object_hash($entity);
+        }
 
         if (!isset($this->importedEntities[$entityClass])) {
             $this->importedEntities[$entityClass] = array();
