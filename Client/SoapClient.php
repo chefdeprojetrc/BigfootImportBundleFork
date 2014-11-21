@@ -4,21 +4,60 @@ namespace Bigfoot\Bundle\ImportBundle\Client;
 
 /**
  * Class SoapClient
+ *
  * @package Bigfoot\Bundle\ImportBundle\Client
  */
 class SoapClient extends \SoapClient
 {
-    /** @var string */
+    /**
+     * @var string
+     */
     protected $requestHeaders;
 
-    /** @var string */
+    /**
+     * @var string
+     */
     protected $responseHeaders;
 
-    /** @var string */
+    /**
+     * @var string
+     */
     protected $responseBody;
 
-    /** @var bool */
+    /**
+     * @var boolean
+     */
     protected $requestInnerXml = false;
+
+    /**
+     * @var array
+     */
+    protected $namespaces = array();
+
+    /**
+     * Create soap enveloppe
+     *
+     * @return \DOMDocument
+     */
+    protected function createSoapEnvelope()
+    {
+        $namespace = $this->getNamespace('soap:Envelope');
+        $uri       = $namespace ? : 'http://schemas.xmlsoap.org/soap/envelope/';
+
+        $soap = new \DOMDocument('1.0', 'UTF-8');
+        $root = $soap->createElementNS($uri, 'soap:Envelope');
+        $root->appendChild($soap->createElement('soap:Header'));
+        $root->appendChild($soap->createElement('soap:Body'));
+        $soap->appendChild($root);
+
+        $this->removeNamespace('soap:Envelope');
+
+        foreach ($this->namespaces as $name => $value) {
+            $soap->createAttributeNS($value, $name);
+        }
+
+        return $soap;
+    }
 
     /**
      * @param string $request
@@ -30,8 +69,7 @@ class SoapClient extends \SoapClient
      */
     public function __doRequest($request, $location, $action, $version = 1, $one_way = false)
     {
-        $soap = new \DOMDocument('1.0', 'UTF-8');
-        $soap->loadXML('<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Header/><soap:Body/></soap:Envelope>');
+        $soap = $this->createSoapEnvelope();
 
         if ($this->requestHeaders) {
             $headerDom = new \DOMDocument('1.0', 'UTF-8');
@@ -54,6 +92,7 @@ class SoapClient extends \SoapClient
         }
 
         $request = $soap->saveXML($soap->documentElement);
+
         $responseBody = '';
         $responseHeader = '';
 
@@ -152,5 +191,73 @@ class SoapClient extends \SoapClient
     public function getRequestInnerXml()
     {
         return $this->requestInnerXml;
+    }
+
+    /**
+     * Gets the value of namespaces.
+     *
+     * @return array
+     */
+    public function getNamespaces()
+    {
+        return $this->namespaces;
+    }
+
+    /**
+     * Sets the value of namespaces.
+     *
+     * @param array $namespaces the namespaces
+     * @return self
+     */
+    public function setNamespaces($namespaces)
+    {
+        $this->namespaces = $namespaces;
+
+        return $this;
+    }
+
+    /**
+     * Get namespace
+     *
+     * @param  string $name
+     * @return mixed
+     */
+    public function getNamespace($name)
+    {
+        if (isset($this->namespaces[$name])) {
+            return $this->namespaces[$name];
+        }
+
+        return false;
+    }
+
+    /**
+     * Add namesapce
+     *
+     * @param string $name
+     * @param string $value
+     */
+    public function addNamespace($name, $value)
+    {
+        $this->namespaces[$name] = $value;
+
+        return $this;
+    }
+
+    /**
+     * Remove namespace
+     *
+     * @param  string $name
+     * @return boolean
+     */
+    public function removeNamespace($name)
+    {
+        if ($this->getNamespace($name)) {
+            unset($this->namespaces[$name]);
+
+            return true;
+        }
+
+        return false;
     }
 }
