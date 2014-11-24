@@ -35,22 +35,48 @@ class SoapClient extends \SoapClient
     protected $namespaces = array();
 
     /**
+     * Get envelope namespace
+     * Return namespace defined for envelope if found
+     *
+     * @return mixed
+     */
+    protected function getEnvelopeNamespace()
+    {
+        foreach ($this->namespaces as $key => $namespace) {
+            if (is_array($namespace) && isset($namespace['envelope']) && $namespace['envelope']) {
+                unset($this->namespaces[$key]);
+
+                return $namespace;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Create soap enveloppe
      *
      * @return \DOMDocument
      */
     protected function createSoapEnvelope()
     {
-        $namespace = $this->getNamespace('soap:Envelope');
-        $uri       = $namespace ? : 'http://schemas.xmlsoap.org/soap/envelope/';
+        $namespace = $this->getEnvelopeNamespace();
+
+        if ($namespace) {
+            $uri    = $namespace['uri'];
+            $prefix = $namespace['prefix'];
+        } else {
+            $uri    = 'http://schemas.xmlsoap.org/soap/envelope/';
+            $prefix = 'soap';
+        }
 
         $soap = new \DOMDocument('1.0', 'UTF-8');
-        $root = $soap->createElementNS($uri, 'soap:Envelope');
-        $root->appendChild($soap->createElement('soap:Header'));
-        $root->appendChild($soap->createElement('soap:Body'));
+        $root = $soap->createElementNS($uri, $prefix.':Envelope');
+        $root->appendChild($soap->createElement($prefix.':Header'));
+        $root->appendChild($soap->createElement($prefix.':Body'));
         $soap->appendChild($root);
 
-        $this->removeNamespace('soap:Envelope');
+        $this->removeNamespace($prefix.':Envelope');
 
         foreach ($this->namespaces as $name => $value) {
             $soap->createAttributeNS($value, $name);
@@ -97,6 +123,7 @@ class SoapClient extends \SoapClient
         $responseHeader = '';
 
         $response = parent::__doRequest($request, $location, $action, $version);
+
         $soap = new \DOMDocument('1.0', 'UTF-8');
         $soap->loadXML($response);
 
