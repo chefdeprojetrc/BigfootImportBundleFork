@@ -100,7 +100,7 @@ class SoapClient extends \SoapClient
         if ($this->requestHeaders) {
             $headerDom = new \DOMDocument('1.0', 'UTF-8');
             $headerDom->loadXML($this->requestHeaders);
-            $headerNode = $soap->importNode($headerDom, true);
+            $headerNode = $soap->importNode($headerDom->documentElement, true);
             $soap->firstChild->firstChild->appendChild($headerNode);
         }
 
