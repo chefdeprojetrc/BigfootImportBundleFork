@@ -2,6 +2,8 @@
 
 namespace Bigfoot\Bundle\ImportBundle\Translation;
 
+use Doctrine\Common\Persistence\Proxy;
+
 /**
  * Class DataTranslationQueue
  * @package Bigfoot\Bundle\ImportBundle\Translation
@@ -39,7 +41,11 @@ class DataTranslationQueue
      */
     public function add($entity, $property, $locale, $value)
     {
-        $entityClass = get_class($entity);
+        if (is_object($entity)) {
+            $entityClass = ($entity instanceof Proxy) ? get_parent_class($entity) : get_class($entity);
+        } else {
+            return null;
+        }
 
         if (!isset($this->queue[$entityClass])) {
             $this->queue[$entityClass] = array();
