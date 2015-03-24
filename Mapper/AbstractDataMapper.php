@@ -46,6 +46,14 @@ abstract class AbstractDataMapper
     abstract public function map($source, $destination);
 
     /**
+     * @param object $destination
+     */
+    public function unmap($destination)
+    {
+        $this->translationQueue->remove($destination);
+    }
+
+    /**
      * @return string
      */
     abstract public function getName();
