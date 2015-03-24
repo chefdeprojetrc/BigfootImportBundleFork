@@ -41,9 +41,8 @@ class DataTranslationQueue
      */
     public function add($entity, $property, $locale, $value)
     {
-        if (is_object($entity)) {
-            $entityClass = ($entity instanceof Proxy) ? get_parent_class($entity) : get_class($entity);
-        } else {
+        $entityClass = $this->getClass($entity);
+        if ($entityClass === null) {
             return null;
         }
 
@@ -68,6 +67,39 @@ class DataTranslationQueue
     }
 
     /**
+     * @param object $entity
+     * @param string $property
+     * @param string $locale
+     */
+    public function remove($entity, $property = null, $locale = null)
+    {
+        $entityClass = $this->getClass($entity);
+        if ($entityClass === null) {
+            return null;
+        }
+        if (array_key_exists($entityClass, $this->queue) == false) {
+            return null;
+        }
+
+        $hash = spl_object_hash($entity);
+        if (array_key_exists($hash, $this->queue[$entityClass]) == false) {
+            return null;
+        }
+
+        foreach ($this->queue[$entityClass][$hash] as $queueLocale => $properties) {
+            if ($locale === null || $locale == $queueLocale) {
+                if ($property === null) {
+                    foreach (array_keys($properties) as $queueProperty) {
+                        unset($this->queue[$entityClass][$hash][$queueLocale][$queueProperty]);
+                    }
+                } else {
+                    unset($this->queue[$entityClass][$hash][$queueLocale][$property]);
+                }
+            }
+        }
+    }
+
+    /**
      * @return $this
      */
     public function clear()
@@ -76,4 +108,18 @@ class DataTranslationQueue
 
         return $this;
     }
+
+    /**
+     * @param object $entity
+     * @return string
+     */
+    protected function getClass($entity)
+    {
+        if (is_object($entity)) {
+            return ($entity instanceof Proxy) ? get_parent_class($entity) : get_class($entity);
+        } else {
+            return null;
+        }
+    }
+
 }
