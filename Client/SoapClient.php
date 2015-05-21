@@ -2,6 +2,8 @@
 
 namespace Bigfoot\Bundle\ImportBundle\Client;
 
+use Bigfoot\Bundle\ImportBundle\Exception\SoapException;
+
 /**
  * Class SoapClient
  *
@@ -123,6 +125,10 @@ class SoapClient extends \SoapClient
         $responseHeader = '';
 
         $response = parent::__doRequest($request, $location, $action, $version);
+
+        if (!$response) {
+            throw new SoapException();
+        }
 
         $soap = new \DOMDocument('1.0', 'UTF-8');
         $soap->loadXML($response);
