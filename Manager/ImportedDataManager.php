@@ -73,12 +73,8 @@ class ImportedDataManager
     }
 
     /**
-     * Loads the entity in importedEntities
-     * and merges it in entityManager. Returns the merged entity
-     *
      * @param $entity
-     * @return mixed $entity
-     * @throws \Exception
+     * @return bool
      */
     public function load($entity)
     {
@@ -107,9 +103,9 @@ class ImportedDataManager
         $this->importedEntities[$entityClass][$importedId] = $entity;
 
         $em = $this->entityManager;
-        $entity = $em->merge($entity);
+        $em->persist($entity);
 
-        return $entity;
+        return true;
     }
 
     /**
