@@ -123,6 +123,22 @@ class SoapClient extends \SoapClient
         $responseHeader = '';
 
         $response = parent::__doRequest($request, $location, $action, $version);
+// $dom = new \DOMDocument;
+// $dom->preserveWhiteSpace = false;
+// $dom->loadXML($request);
+// $dom->formatOutput = true;
+// //echo "<b>REQUEST:</b>";
+// dump($dom);
+//
+// $response = parent::__doRequest($request, $location, $action, $version);
+//
+// $dom = new \DOMDocument;
+// $dom->preserveWhiteSpace = false;
+// $dom->loadXML($response);
+// $dom->formatOutput = true;
+// //echo "<b>RESPONSE:</b>";
+//        dump($dom);
+// die;
 
         $soap = new \DOMDocument('1.0', 'UTF-8');
         $soap->loadXML($response);
