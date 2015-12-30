@@ -11,7 +11,7 @@ namespace Bigfoot\Bundle\ImportBundle\Form;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\OptionsResolver\OptionsResolverInterface;
+use Symfony\Component\OptionsResolver\OptionsResolver;
 
 /**
  * Class ProtocolType
@@ -33,7 +33,7 @@ class ProtocolType extends AbstractType {
         $this->protocolChoices = $protocolChoices;
     }
 
-    public function setDefaultOptions(OptionsResolverInterface $resolver)
+    public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults(array(
             'choices' => $this->protocolChoices

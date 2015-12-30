@@ -71,10 +71,12 @@ class DataSourceController extends CrudController
      * Lists all DataSource entities.
      *
      * @Route("/", name="admin_datasource")
+     * @param Request $request
+     * @return array
      */
-    public function indexAction()
+    public function indexAction(Request $request)
     {
-        return $this->doIndex();
+        return $this->doIndex($request);
     }
 
     /**
