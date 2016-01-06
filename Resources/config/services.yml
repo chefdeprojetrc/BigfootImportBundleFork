@@ -17,7 +17,7 @@ services:
     bigfoot_import.xmlmapper:
         class: '%bigfoot_import.xmlmapper.class%'
         arguments:
-            - @doctrine.orm.entity_manager
+            - '@doctrine.orm.entity_manager'
     form.type.protocol:
         class: Bigfoot\Bundle\ImportBundle\Form\ProtocolType
         arguments:
@@ -26,7 +26,7 @@ services:
             - { name: form.type, alias: protocol }
     bigfoot_bundle_importbundle_datasourcetype:
         class: '%bigfoot_import.datasourcetype.class%'
-        arguments: [@service_container]
+        arguments: ['@service_container']
         tags:
             - { name: form.type, alias: bigfoot_bundle_importbundle_datasourcetype}
 
@@ -34,26 +34,26 @@ services:
     bigfoot_import.subscriber.menu:
         class: Bigfoot\Bundle\ImportBundle\Subscriber\MenuSubscriber
         arguments:
-            - @security.context
+            - '@security.token_storage'
         tags:
             - { name: kernel.event_subscriber }
 
     bigfoot_import.data.manager:
         class: %bigfoot_import.data.manager.class%
         arguments:
-            - @doctrine.orm.entity_manager
-            - @validator
-            - @property_accessor
-            - @bigfoot_import.translation.queue
-            - @annotation_reader
-            - @bigfoot_core.translation.repository
+            - '@doctrine.orm.entity_manager'
+            - '@validator'
+            - '@property_accessor'
+            - '@bigfoot_import.translation.queue'
+            - '@annotation_reader'
+            - '@bigfoot_core.translation.repository'
 
     bigfoot_import.data.mapper:
         class: %bigfoot_import.data.mapper.class%
         abstract: true
         arguments:
-            - @doctrine.orm.entity_manager
-            - @bigfoot_import.translation.queue
+            - '@doctrine.orm.entity_manager'
+            - '@bigfoot_import.translation.queue'
 
     bigfoot_import.translation.queue:
         class: %bigfoot_import.translation.queue.class%
