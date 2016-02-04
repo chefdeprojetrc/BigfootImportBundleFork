@@ -8,7 +8,7 @@ parameters:
     bigfoot_import.data.mapper.class: 'Bigfoot\Bundle\ImportBundle\Mapper\AbstractDataMapper'
     bigfoot_import.translation.queue.class: 'Bigfoot\Bundle\ImportBundle\Translation\DataTranslationQueue'
     bigfoot_import.data.mapper.factory.class: 'Bigfoot\Bundle\ImportBundle\Factory\MapperFactory'
-    bigfoot_import.transversal_data.queue.class: 'Bigfoot\Bundle\ImportBundle\TransversalData\TransversalDataQueue'
+    bigfoot_import.transversal_data.manager.class: 'Bigfoot\Bundle\ImportBundle\Manager\TransversalDataManager'
 
 services:
     bigfoot_import.client:
@@ -48,7 +48,7 @@ services:
             - '@bigfoot_import.translation.queue'
             - '@annotation_reader'
             - '@bigfoot_core.translation.repository'
-            - '@bigfoot_import.transversal_data.queue'
+            - '@bigfoot_import.transversal_data.manager'
 
     bigfoot_import.data.mapper:
         class: %bigfoot_import.data.mapper.class%
@@ -56,7 +56,7 @@ services:
         arguments:
             - '@doctrine.orm.entity_manager'
             - '@bigfoot_import.translation.queue'
-            - '@bigfoot_import.transversal_data.queue'
+            - '@bigfoot_import.transversal_data.manager'
 
     bigfoot_import.translation.queue:
         class: %bigfoot_import.translation.queue.class%
@@ -64,8 +64,8 @@ services:
     bigfoot_import.data.mapper.factory:
         class: %bigfoot_import.data.mapper.factory.class%
 
-    bigfoot_import.transversal_data.queue:
-        class: %bigfoot_import.transversal_data.queue.class%
+    bigfoot_import.transversal_data.manager:
+        class: %bigfoot_import.transversal_data.manager.class%
         arguments:
             - '@doctrine.orm.entity_manager'
             - '@property_accessor'

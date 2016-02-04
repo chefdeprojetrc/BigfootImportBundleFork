@@ -1,13 +1,13 @@
 <?php
 
-namespace Bigfoot\Bundle\ImportBundle\TransversalData;
+namespace Bigfoot\Bundle\ImportBundle\Manager;
 
 use Bigfoot\Bundle\CoreBundle\Exception\InvalidArgumentException;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManager;
 use Symfony\Component\PropertyAccess\PropertyAccessor;
 
-class TransversalDataQueue
+class TransversalDataManager
 {
     /** @var  EntityManager */
     private $entityManager;
@@ -26,7 +26,7 @@ class TransversalDataQueue
     }
 
     /** @var array */
-    private $queue = array();
+    private $data = array();
 
     /**
      * @param string $key
@@ -38,11 +38,11 @@ class TransversalDataQueue
             throw new InvalidArgumentException('Entities must be an array or an ArrayCollection !');
         }
 
-        if (array_key_exists($key, $this->queue)) {
+        if (array_key_exists($key, $this->data)) {
             throw new InvalidArgumentException(sprintf('Key "%s" already exists in TransversalDataQueue', $key));
         }
 
-        $this->queue[$key] = $entities;
+        $this->data[$key] = $entities;
     }
 
     /**
@@ -51,13 +51,13 @@ class TransversalDataQueue
     public function rebuildReferences($key = null)
     {
         if (null !== $key) {
-            if (!array_key_exists($key, $this->queue)) {
+            if (!array_key_exists($key, $this->data)) {
                 throw new InvalidArgumentException(sprintf('Key "%s" does not exist in TransversalDataQueue', $key));
             }
 
             $this->rebuildReferencesForEntity($key);
         } else {
-            foreach (array_keys($this->queue) as $key) {
+            foreach (array_keys($this->data) as $key) {
                 $this->rebuildReferencesForEntity($key);
             }
         }
@@ -68,23 +68,23 @@ class TransversalDataQueue
      */
     private function rebuildReferencesForEntity($key)
     {
-        $entities = $this->queue[$key];
+        $entities = $this->data[$key];
         $mergedEntities = array();
 
         foreach ($entities as $entity) {
             $mergedEntities[] = $this->entityManager->merge($entity);
         }
-        $this->queue[$key] = $mergedEntities;
+        $this->data[$key] = $mergedEntities;
         unset($entities);
     }
 
     public function getTransversalData($key, $identifier, $needle)
     {
-        if (!array_key_exists($key, $this->queue)) {
+        if (!array_key_exists($key, $this->data)) {
             throw new InvalidArgumentException(sprintf('Key "%s" does not exist in TransversalDataQueue', $key));
         }
 
-        foreach ($this->queue[$key] as $entity) {
+        foreach ($this->data[$key] as $entity) {
             if ($needle == $this->propertyAccessor->getValue($entity, $identifier)) {
                 return $entity;
             }
@@ -94,12 +94,12 @@ class TransversalDataQueue
     }
 
     /**
-     * @param array $queue
+     * @param array $data
      * @return $this
      */
-    public function setQueue($queue)
+    public function setData($data)
     {
-        $this->queue = $queue;
+        $this->data = $data;
 
         return $this;
     }
@@ -107,9 +107,9 @@ class TransversalDataQueue
     /**
      * @return array
      */
-    public function getQueue()
+    public function getData()
     {
-        return $this->queue;
+        return $this->data;
     }
 
     /**
@@ -117,7 +117,7 @@ class TransversalDataQueue
      */
     public function clear()
     {
-        $this->queue = array();
+        $this->data = array();
 
         return $this;
     }

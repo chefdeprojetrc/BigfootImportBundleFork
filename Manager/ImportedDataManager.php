@@ -2,9 +2,8 @@
 
 namespace Bigfoot\Bundle\ImportBundle\Manager;
 
-use Bigfoot\Bundle\ImportBundle\Entity\ImportedDataRepositoryInterface;
 use Bigfoot\Bundle\ImportBundle\Translation\DataTranslationQueue;
-use Bigfoot\Bundle\ImportBundle\TransversalData\TransversalDataQueue;
+use Bigfoot\Bundle\ImportBundle\TransversalData\TransversalDataManager;
 use Doctrine\ORM\EntityManager;
 use Symfony\Component\PropertyAccess\PropertyAccessor;
 use Symfony\Component\Validator\Validator;
@@ -44,7 +43,7 @@ class ImportedDataManager
     /** @var string */
     protected $importedIdentifier;
 
-    /** @var  TransversalDataQueue */
+    /** @var  transversalDataManager */
     protected $transversalDataQueue;
 
     /**
@@ -54,7 +53,7 @@ class ImportedDataManager
      * @param \Bigfoot\Bundle\ImportBundle\Translation\DataTranslationQueue $translationQueue
      * @param \Doctrine\Common\Annotations\FileCacheReader $annotationReader
      * @param \Bigfoot\Bundle\CoreBundle\Entity\TranslationRepository $bigfootTransRepo
-     * @param TransversalDataQueue $transversalDataQueue
+     * @param transversalDataManager $transversalDataQueue
      */
     public function __construct(
         $entityManager,
@@ -149,7 +148,7 @@ class ImportedDataManager
         $em->clear();
         $this->importedEntities = array();
         $this->translationQueue->clear();
-        $this->transversalDataQueue->rebuildReferences();
+        $this->transversalDataManager->rebuildReferences();
 
         gc_collect_cycles();
     }
