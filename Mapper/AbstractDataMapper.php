@@ -2,7 +2,7 @@
 
 namespace Bigfoot\Bundle\ImportBundle\Mapper;
 
-use Bigfoot\Bundle\ImportBundle\TransversalData\TransversalDataManager;
+use Bigfoot\Bundle\ImportBundle\Manager\TransversalDataManager;
 use Gedmo\Translatable\Entity\Translation;
 
 /**
@@ -17,24 +17,24 @@ abstract class AbstractDataMapper
     /** @var \Bigfoot\Bundle\ImportBundle\Translation\DataTranslationQueue */
     protected $translationQueue;
 
-    /** @var  transversalDataManager */
-    protected $transversalDataQueue;
+    /** @var  TransversalDataManager */
+    protected $transversalDataManager;
 
     /**
      * @param \Doctrine\ORM\EntityManager $entityManager
      * @param \Bigfoot\Bundle\ImportBundle\Translation\DataTranslationQueue $translationQueue
-     * @param transversalDataManager $transversalDataQueue
+     * @param transversalDataManager $transversalDataManager
      */
-    public function __construct($entityManager, $translationQueue, $transversalDataQueue)
+    public function __construct($entityManager, $translationQueue, $transversalDataManager)
     {
-        $this->entityManager        = $entityManager;
-        $this->translationQueue     = $translationQueue;
-        $this->transversalDataQueue = $transversalDataQueue;
+        $this->entityManager          = $entityManager;
+        $this->translationQueue       = $translationQueue;
+        $this->transversalDataManager = $transversalDataManager;
     }
 
     public function addTransversalData($key, $entities)
     {
-        $this->transversalDataQueue->add($key, $entities);
+        $this->transversalDataManager->add($key, $entities);
     }
 
     /**

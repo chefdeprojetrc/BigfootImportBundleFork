@@ -3,7 +3,6 @@
 namespace Bigfoot\Bundle\ImportBundle\Manager;
 
 use Bigfoot\Bundle\ImportBundle\Translation\DataTranslationQueue;
-use Bigfoot\Bundle\ImportBundle\TransversalData\TransversalDataManager;
 use Doctrine\ORM\EntityManager;
 use Symfony\Component\PropertyAccess\PropertyAccessor;
 use Symfony\Component\Validator\Validator;
@@ -43,8 +42,8 @@ class ImportedDataManager
     /** @var string */
     protected $importedIdentifier;
 
-    /** @var  transversalDataManager */
-    protected $transversalDataQueue;
+    /** @var  TransversalDataManager */
+    protected $transversalDataManager;
 
     /**
      * @param \Doctrine\ORM\EntityManager $entityManager
@@ -53,7 +52,7 @@ class ImportedDataManager
      * @param \Bigfoot\Bundle\ImportBundle\Translation\DataTranslationQueue $translationQueue
      * @param \Doctrine\Common\Annotations\FileCacheReader $annotationReader
      * @param \Bigfoot\Bundle\CoreBundle\Entity\TranslationRepository $bigfootTransRepo
-     * @param transversalDataManager $transversalDataQueue
+     * @param transversalDataManager $transversalDataManager
      */
     public function __construct(
         $entityManager,
@@ -62,15 +61,15 @@ class ImportedDataManager
         $translationQueue,
         $annotationReader,
         $bigfootTransRepo,
-        $transversalDataQueue
+        $transversalDataManager
     ) {
-        $this->entityManager        = $entityManager;
-        $this->validator            = $validator;
-        $this->propertyAccessor     = $propertyAccessor;
-        $this->translationQueue     = $translationQueue;
-        $this->annotationReader     = $annotationReader;
-        $this->bigfootTransRepo     = $bigfootTransRepo;
-        $this->transversalDataQueue = $transversalDataQueue;
+        $this->entityManager          = $entityManager;
+        $this->validator              = $validator;
+        $this->propertyAccessor       = $propertyAccessor;
+        $this->translationQueue       = $translationQueue;
+        $this->annotationReader       = $annotationReader;
+        $this->bigfootTransRepo       = $bigfootTransRepo;
+        $this->transversalDataManager = $transversalDataManager;
     }
 
     /**
@@ -134,7 +133,7 @@ class ImportedDataManager
     {
         $this->flush();
         $this->iteration = 0;
-        $this->transversalDataQueue->clear();
+        $this->transversalDataManager->clear();
     }
 
     /**
