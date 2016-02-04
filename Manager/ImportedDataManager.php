@@ -135,6 +135,7 @@ class ImportedDataManager
     {
         $this->flush();
         $this->iteration = 0;
+        $this->transversalDataQueue->clear();
     }
 
     /**
