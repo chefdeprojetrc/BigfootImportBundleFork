@@ -4,6 +4,7 @@ namespace Bigfoot\Bundle\ImportBundle\Manager;
 
 use Bigfoot\Bundle\ImportBundle\Entity\ImportedDataRepositoryInterface;
 use Bigfoot\Bundle\ImportBundle\Translation\DataTranslationQueue;
+use Bigfoot\Bundle\ImportBundle\TransversalData\TransversalDataQueue;
 use Doctrine\ORM\EntityManager;
 use Symfony\Component\PropertyAccess\PropertyAccessor;
 use Symfony\Component\Validator\Validator;
@@ -43,6 +44,9 @@ class ImportedDataManager
     /** @var string */
     protected $importedIdentifier;
 
+    /** @var  TransversalDataQueue */
+    protected $transversalDataQueue;
+
     /**
      * @param \Doctrine\ORM\EntityManager $entityManager
      * @param \Symfony\Component\Validator\Validator $validator
@@ -50,15 +54,24 @@ class ImportedDataManager
      * @param \Bigfoot\Bundle\ImportBundle\Translation\DataTranslationQueue $translationQueue
      * @param \Doctrine\Common\Annotations\FileCacheReader $annotationReader
      * @param \Bigfoot\Bundle\CoreBundle\Entity\TranslationRepository $bigfootTransRepo
+     * @param TransversalDataQueue $transversalDataQueue
      */
-    public function __construct($entityManager, $validator, $propertyAccessor, $translationQueue, $annotationReader, $bigfootTransRepo)
-    {
-        $this->entityManager    = $entityManager;
-        $this->validator        = $validator;
-        $this->propertyAccessor = $propertyAccessor;
-        $this->translationQueue = $translationQueue;
-        $this->annotationReader = $annotationReader;
-        $this->bigfootTransRepo = $bigfootTransRepo;
+    public function __construct(
+        $entityManager,
+        $validator,
+        $propertyAccessor,
+        $translationQueue,
+        $annotationReader,
+        $bigfootTransRepo,
+        $transversalDataQueue
+    ) {
+        $this->entityManager        = $entityManager;
+        $this->validator            = $validator;
+        $this->propertyAccessor     = $propertyAccessor;
+        $this->translationQueue     = $translationQueue;
+        $this->annotationReader     = $annotationReader;
+        $this->bigfootTransRepo     = $bigfootTransRepo;
+        $this->transversalDataQueue = $transversalDataQueue;
     }
 
     /**
@@ -87,8 +100,8 @@ class ImportedDataManager
         }
 
         $propertyAccessor = $this->propertyAccessor;
-        $entityClass = ltrim(get_class($entity), '\\');
-        $property = $this->getImportedIdentifier($entityClass);
+        $entityClass      = ltrim(get_class($entity), '\\');
+        $property         = $this->getImportedIdentifier($entityClass);
 
         try {
             $importedId = $propertyAccessor->getValue($entity, $property);
@@ -135,6 +148,7 @@ class ImportedDataManager
         $em->clear();
         $this->importedEntities = array();
         $this->translationQueue->clear();
+        $this->transversalDataQueue->rebuildReferences();
 
         gc_collect_cycles();
     }
@@ -152,7 +166,7 @@ class ImportedDataManager
             throw new \Exception('You must declare a property identifier for this data manager. The property identifier must be a accessible property in your entities.');
         }
 
-        $property = $this->getImportedIdentifier($class);
+        $property    = $this->getImportedIdentifier($class);
         $entityClass = ltrim($class, '\\');
 
         $entity = null;
@@ -226,7 +240,7 @@ class ImportedDataManager
 
                 foreach ($locales as $locale => $properties) {
                     foreach ($properties as $property => $values) {
-                        $entity = $values['entity'];
+                        $entity  = $values['entity'];
                         $content = $values['content'];
 
                         $translationRepository->translate($entity, $property, $locale, $content);
