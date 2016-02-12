@@ -233,18 +233,8 @@ class ImportedDataManager
         $managed = $this->getManagedEntity();
         $time = new \DateTime('now');
 
-        $this->logger->warning(
-            sprintf(
-                "\n[%s] - <info>FLUSH</info> (insert: <comment>%d</comment>, update: <comment>%d</comment>, delete <comment>%d</comment>)",
-                $time->format('H:i:s'),
-                count($managed['insert']),
-                count($managed['update']),
-                count($managed['delete'])
-            )
-        );
-
         $this->logger->notice("\n");
-        $this->logger->notice(sprintf("\t<info>#######></info> FLUSH OPERATION"));
+        $this->logger->warning(sprintf("\t<info>#######></info> FLUSH OPERATION"));
         $this->logger->notice(sprintf("\t<info>#</info> > Start Time: <comment>%s</comment>", $time->format('H:i:s')));
         $this->logger->notice(sprintf("\t<info>#</info> > Entity to insert: <comment>%s</comment>", count($managed['insert'])));
         $this->logger->notice(sprintf("\t<info>#</info> > Entity to update: <comment>%s</comment>", count($managed['update'])));
@@ -275,19 +265,10 @@ class ImportedDataManager
     protected function postFlushVerbose(StopwatchEvent $event)
     {
         $time = new \DateTime('now');
-
-        $this->logger->warning(
-            sprintf(
-                " <info>Flush done</info> in %s [%s]",
-                $this->getHumanTime($event->getDuration()),
-                $this->formatSizeUnits($event->getMemory())
-            )
-        );
-
-        $this->logger->notice(sprintf("\t<info>#</info> > End Time: <comment>%s</comment>", $time->format('H:i:s')));
+        $this->logger->warning(sprintf("\t<info>#</info> > End Time: <comment>%s</comment>", $time->format('H:i:s')));
         $this->logger->notice(sprintf("\t<info>#</info> > Duration: <comment>%s</comment>", $this->getHumanTime($event->getEndTime())));
-        $this->logger->notice(sprintf("\t<info>#</info> > Memory: <comment>%s</comment>", $this->formatSizeUnits($event->getMemory())));
-        $this->logger->notice(sprintf("\t<info>#######></info>"));
+        $this->logger->info(sprintf("\t<info>#</info> > Memory: <comment>%s</comment>", $this->formatSizeUnits($event->getMemory())));
+        $this->logger->warning(sprintf("\t<info>#######></info>"));
         $this->logger->notice("\n");
     }
 
