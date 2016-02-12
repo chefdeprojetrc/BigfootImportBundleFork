@@ -4,7 +4,9 @@ namespace Bigfoot\Bundle\ImportBundle\Manager;
 
 use Bigfoot\Bundle\ImportBundle\Translation\DataTranslationQueue;
 use Doctrine\ORM\EntityManager;
+use Symfony\Bridge\Monolog\Logger;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\HttpKernel\Log\NullLogger;
 use Symfony\Component\PropertyAccess\PropertyAccessor;
 use Symfony\Component\Stopwatch\Stopwatch;
 use Symfony\Component\Stopwatch\StopwatchEvent;
@@ -48,18 +50,11 @@ class ImportedDataManager
     /** @var  TransversalDataManager */
     protected $transversalDataManager;
 
-    /** @var  OutputInterface */
-    protected $output;
-
-    /** Verbose Level */
-    protected $verbose;
-
     /** @var  Stopwatch */
     protected $timer;
 
-    const QUIET = 0;
-    const VERBOSE = 1;
-    const DEBUG = 2;
+    /** @var  Logger */
+    protected $logger;
 
     /**
      * @param \Doctrine\ORM\EntityManager $entityManager
@@ -69,6 +64,7 @@ class ImportedDataManager
      * @param \Doctrine\Common\Annotations\FileCacheReader $annotationReader
      * @param \Bigfoot\Bundle\CoreBundle\Entity\TranslationRepository $bigfootTransRepo
      * @param transversalDataManager $transversalDataManager
+     * @param Logger $logger
      */
     public function __construct(
         $entityManager,
@@ -77,7 +73,8 @@ class ImportedDataManager
         $translationQueue,
         $annotationReader,
         $bigfootTransRepo,
-        $transversalDataManager
+        $transversalDataManager,
+        $logger
     ) {
         $this->entityManager          = $entityManager;
         $this->validator              = $validator;
@@ -86,7 +83,7 @@ class ImportedDataManager
         $this->annotationReader       = $annotationReader;
         $this->bigfootTransRepo       = $bigfootTransRepo;
         $this->transversalDataManager = $transversalDataManager;
-        $this->verbose                = self::QUIET;
+        $this->logger                 = new NullLogger();
         $this->timer                  = new Stopwatch();
     }
 
@@ -102,28 +99,12 @@ class ImportedDataManager
     }
 
     /**
-     * @param $level
-     * @return $this
-     * @throws \Exception
-     */
-    public function setVerbose($level)
-    {
-        if ($level != self::QUIET && $level != self::VERBOSE && $level != self::DEBUG) {
-            throw new \Exception('To set the verbosity level, you must use ImportedDataManager::[QUIET|VERBOSE|DEBUG] for this data manager.');
-        }
-
-        $this->verbose = $level;
-
-        return $this;
-    }
-
-    /**
-     * @param OutputInterface $output
+     * @param Logger $logger
      * @return ImportedDataManager
      */
-    public function setOutput(OutputInterface $output)
+    public function setLogger(Logger $logger)
     {
-        $this->output = $output;
+        $this->logger = $logger;
         return $this;
     }
 
@@ -199,9 +180,8 @@ class ImportedDataManager
      */
     public function flush()
     {
-        if ($this->verbose > 0) {
-            $this->preFlushVerbose($this->timer->start('flushOp'));
-        }
+        $this->timer = new Stopwatch();
+        $this->preFlushVerbose($this->timer->start('flushOp'));
 
         $this->processTranslations();
         $em = $this->entityManager;
@@ -211,9 +191,7 @@ class ImportedDataManager
         $this->translationQueue->clear();
         $this->transversalDataManager->rebuildReferences();
 
-        if ($this->verbose > 0) {
-            $this->postFlushVerbose($this->timer->stop('flushOp'));
-        }
+        $this->postFlushVerbose($this->timer->stop('flushOp'));
 
         gc_collect_cycles();
     }
@@ -242,61 +220,75 @@ class ImportedDataManager
         $this->entityManager->remove($e);
     }
 
+    public function clear()
+    {
+        $this->entityManager->clear();
+    }
+
     /**
      * @throws \Exception
      */
     protected function preFlushVerbose(StopwatchEvent $event)
     {
-        if ($this->output === null) {
-            throw new \Exception('You must give outputInterface for use this data manager in verbose mode. The outputInterface must be defined by setOutput().');
-        }
-
         $managed = $this->getManagedEntity();
         $time = new \DateTime('now');
 
-        $this->output->writeln("\n");
-        $this->output->writeln(sprintf("\t<info>#######></info> FLUSH OPERATION"));
-        $this->output->writeln(sprintf("\t<info>#</info> > Start Time: <comment>%s</comment>", $time->format('H:i:s')));
-        $this->output->writeln(sprintf("\t<info>#</info> > Entity to insert: <comment>%s</comment>", count($managed['insert'])));
-        $this->output->writeln(sprintf("\t<info>#</info> > Entity to update: <comment>%s</comment>", count($managed['update'])));
-        $this->output->writeln(sprintf("\t<info>#</info> > Entity to delete: <comment>%s</comment>", count($managed['delete'])));
+        $this->logger->warning(
+            sprintf(
+                "\n[%s] - <info>FLUSH</info> (insert: <comment>%d</comment>, update: <comment>%d</comment>, delete <comment>%d</comment>)",
+                $time->format('H:i:s'),
+                count($managed['insert']),
+                count($managed['update']),
+                count($managed['delete'])
+            )
+        );
 
-        if ($this->verbose == self::DEBUG) {
-            foreach ($managed as $key => $data) {
-                $this->output->writeln(sprintf("\t<info>#</info> > %s list (<comment>%s</comment>): ", ucfirst($key), count($data)));
-                $objects = array();
+        $this->logger->notice("\n");
+        $this->logger->notice(sprintf("\t<info>#######></info> FLUSH OPERATION"));
+        $this->logger->notice(sprintf("\t<info>#</info> > Start Time: <comment>%s</comment>", $time->format('H:i:s')));
+        $this->logger->notice(sprintf("\t<info>#</info> > Entity to insert: <comment>%s</comment>", count($managed['insert'])));
+        $this->logger->notice(sprintf("\t<info>#</info> > Entity to update: <comment>%s</comment>", count($managed['update'])));
+        $this->logger->notice(sprintf("\t<info>#</info> > Entity to delete: <comment>%s</comment>", count($managed['delete'])));
 
-                foreach ($data as $e) {
-                    $oName = get_class($e);
 
-                    if (isset($objects[$oName])) {
-                        $cpt = $objects[$oName];
-                        $objects[$oName] = ++$cpt;
-                    } else {
-                        $objects[$oName] = 1;
-                    }
+        foreach ($managed as $key => $data) {
+            $this->logger->debug(sprintf("\t<info>#</info> > %s list (<comment>%s</comment>): ", ucfirst($key), count($data)));
+            $objects = array();
+
+            foreach ($data as $e) {
+                $oName = get_class($e);
+
+                if (isset($objects[$oName])) {
+                    $cpt = $objects[$oName];
+                    $objects[$oName] = ++$cpt;
+                } else {
+                    $objects[$oName] = 1;
                 }
+            }
 
-                foreach ($objects as $o => $nb) {
-                    $this->output->writeln(sprintf("\t<info>#</info>      <comment>%5s</comment> x <comment>%s</comment>", $nb, $o));
-                }
+            foreach ($objects as $o => $nb) {
+                $this->logger->debug(sprintf("\t<info>#</info>      <comment>%5s</comment> x <comment>%s</comment>", $nb, $o));
             }
         }
     }
 
     protected function postFlushVerbose(StopwatchEvent $event)
     {
-        if ($this->output === null) {
-            throw new \Exception('You must give outputInterface for use this data manager in verbose mode. The outputInterface must be defined by setOutput().');
-        }
-
         $time = new \DateTime('now');
 
-        $this->output->writeln(sprintf("\t<info>#</info> > End Time: <comment>%s</comment>", $time->format('H:i:s')));
-        $this->output->writeln(sprintf("\t<info>#</info> > Duration: <comment>%s</comment>", $this->getHumanTime($event->getDuration())));
-        $this->output->writeln(sprintf("\t<info>#</info> > Memory: <comment>%s</comment>", $this->formatSizeUnits($event->getMemory())));
-        $this->output->writeln(sprintf("\t<info>#######></info>"));
-        $this->output->writeln("\n");
+        $this->logger->warning(
+            sprintf(
+                " <info>Flush done</info> in %s [%s]",
+                $this->getHumanTime($event->getDuration()),
+                $this->formatSizeUnits($event->getMemory())
+            )
+        );
+
+        $this->logger->notice(sprintf("\t<info>#</info> > End Time: <comment>%s</comment>", $time->format('H:i:s')));
+        $this->logger->notice(sprintf("\t<info>#</info> > Duration: <comment>%s</comment>", $this->getHumanTime($event->getEndTime())));
+        $this->logger->notice(sprintf("\t<info>#</info> > Memory: <comment>%s</comment>", $this->formatSizeUnits($event->getMemory())));
+        $this->logger->notice(sprintf("\t<info>#######></info>"));
+        $this->logger->notice("\n");
     }
 
     private function getHumanTime($ms)
