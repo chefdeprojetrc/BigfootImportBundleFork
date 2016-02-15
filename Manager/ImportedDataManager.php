@@ -111,12 +111,17 @@ class ImportedDataManager
      */
     public function getManagedEntity()
     {
-        $this->entityManager->getUnitOfWork()->computeChangeSets();
-        return [
-            'insert' => $this->entityManager->getUnitOfWork()->getScheduledEntityInsertions(),
-            'update'    => $this->entityManager->getUnitOfWork()->getScheduledEntityUpdates(),
-            'delete'  => $this->entityManager->getUnitOfWork()->getScheduledEntityDeletions(),
-        ];
+        $fakeUow = clone $this->entityManager->getUnitOfWork();
+        $fakeUow->computeChangeSets();
+
+        $data = array(
+            'insert' => $fakeUow->getScheduledEntityInsertions(),
+            'update' => $fakeUow->getScheduledEntityUpdates(),
+            'delete' => $fakeUow->getScheduledEntityDeletions(),
+        );
+
+        unset($fakeUow);
+        return $data;
     }
 
     /**
