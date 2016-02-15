@@ -4,7 +4,12 @@ namespace Bigfoot\Bundle\ImportBundle\Manager;
 
 use Bigfoot\Bundle\ImportBundle\Translation\DataTranslationQueue;
 use Doctrine\ORM\EntityManager;
+use Symfony\Bridge\Monolog\Logger;
+use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\HttpKernel\Log\NullLogger;
 use Symfony\Component\PropertyAccess\PropertyAccessor;
+use Symfony\Component\Stopwatch\Stopwatch;
+use Symfony\Component\Stopwatch\StopwatchEvent;
 use Symfony\Component\Validator\Validator;
 
 /**
@@ -45,6 +50,12 @@ class ImportedDataManager
     /** @var  TransversalDataManager */
     protected $transversalDataManager;
 
+    /** @var  Stopwatch */
+    protected $timer;
+
+    /** @var  Logger */
+    protected $logger;
+
     /**
      * @param \Doctrine\ORM\EntityManager $entityManager
      * @param \Symfony\Component\Validator\Validator $validator
@@ -70,6 +81,8 @@ class ImportedDataManager
         $this->annotationReader       = $annotationReader;
         $this->bigfootTransRepo       = $bigfootTransRepo;
         $this->transversalDataManager = $transversalDataManager;
+        $this->logger                 = new NullLogger();
+        $this->timer                  = new Stopwatch();
     }
 
     /**
@@ -84,8 +97,32 @@ class ImportedDataManager
     }
 
     /**
+     * @param Logger $logger
+     * @return ImportedDataManager
+     */
+    public function setLogger(Logger $logger)
+    {
+        $this->logger = $logger;
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getManagedEntity()
+    {
+        $this->entityManager->getUnitOfWork()->computeChangeSets();
+        return [
+            'insert' => $this->entityManager->getUnitOfWork()->getScheduledEntityInsertions(),
+            'update'    => $this->entityManager->getUnitOfWork()->getScheduledEntityUpdates(),
+            'delete'  => $this->entityManager->getUnitOfWork()->getScheduledEntityDeletions(),
+        ];
+    }
+
+    /**
      * @param $entity
      * @return bool
+     * @throws \Exception
      */
     public function load($entity)
     {
@@ -141,6 +178,9 @@ class ImportedDataManager
      */
     public function flush()
     {
+        $this->timer = new Stopwatch();
+        $this->preFlushVerbose($this->timer->start('flushOp'));
+
         $this->processTranslations();
         $em = $this->entityManager;
         $em->flush();
@@ -149,14 +189,143 @@ class ImportedDataManager
         $this->translationQueue->clear();
         $this->transversalDataManager->rebuildReferences();
 
+        $this->postFlushVerbose($this->timer->stop('flushOp'));
+
         gc_collect_cycles();
     }
 
     /**
-     * @param string $class
-     * @param string $key
-     * @param string $context
-     * @return mixed
+     * @param $e
+     */
+    public function persist($e)
+    {
+        $this->entityManager->persist($e);
+    }
+
+    /**
+     * @param $e
+     */
+    public function merge($e)
+    {
+        $this->entityManager->merge($e);
+    }
+
+    /**
+     * @param $e
+     */
+    public function remove($e)
+    {
+        $this->entityManager->remove($e);
+    }
+
+    public function clear()
+    {
+        $this->entityManager->clear();
+    }
+
+    /**
+     * @throws \Exception
+     */
+    protected function preFlushVerbose(StopwatchEvent $event)
+    {
+        $managed = $this->getManagedEntity();
+        $time = new \DateTime('now');
+
+        $this->logger->notice("\n");
+        $this->logger->warning(sprintf("\t<info>#######></info> FLUSH OPERATION"));
+        $this->logger->notice(sprintf("\t<info>#</info> > Start Time: <comment>%s</comment>", $time->format('H:i:s')));
+        $this->logger->notice(sprintf("\t<info>#</info> > Entity to insert: <comment>%s</comment>", count($managed['insert'])));
+        $this->logger->notice(sprintf("\t<info>#</info> > Entity to update: <comment>%s</comment>", count($managed['update'])));
+        $this->logger->notice(sprintf("\t<info>#</info> > Entity to delete: <comment>%s</comment>", count($managed['delete'])));
+
+
+        foreach ($managed as $key => $data) {
+            $this->logger->debug(sprintf("\t<info>#</info> > %s list (<comment>%s</comment>): ", ucfirst($key), count($data)));
+            $objects = array();
+
+            foreach ($data as $e) {
+                $oName = get_class($e);
+
+                if (isset($objects[$oName])) {
+                    $cpt = $objects[$oName];
+                    $objects[$oName] = ++$cpt;
+                } else {
+                    $objects[$oName] = 1;
+                }
+            }
+
+            foreach ($objects as $o => $nb) {
+                $this->logger->debug(sprintf("\t<info>#</info>      <comment>%5s</comment> x <comment>%s</comment>", $nb, $o));
+            }
+        }
+    }
+
+    protected function postFlushVerbose(StopwatchEvent $event)
+    {
+        $time = new \DateTime('now');
+        $this->logger->warning(sprintf("\t<info>#</info> > End Time: <comment>%s</comment>", $time->format('H:i:s')));
+        $this->logger->notice(sprintf("\t<info>#</info> > Duration: <comment>%s</comment>", $this->getHumanTime($event->getEndTime())));
+        $this->logger->info(sprintf("\t<info>#</info> > Memory: <comment>%s</comment>", $this->formatSizeUnits($event->getMemory())));
+        $this->logger->warning(sprintf("\t<info>#######></info>"));
+        $this->logger->notice("\n");
+    }
+
+    private function getHumanTime($ms)
+    {
+        $message = "Less than a second.";
+
+        if ($ms >= 1000){
+            $seconds = (int) ($ms / 1000) % 60;
+            $minutes = (int) (($ms / (1000 * 60)) % 60);
+            $hours   = (int) (($ms / (1000 * 60 * 60)) % 24);
+
+            if(($hours == 0) && ($minutes != 0)){
+                $message = sprintf("%dmin %ds", $minutes, $seconds);
+            }elseif(($hours == 0) && ($minutes == 0)){
+                $message = sprintf("%ds", $seconds);
+            }else{
+                $message = sprintf("%dhours %dmin %ds", $hours, $minutes, $seconds);
+            }
+        }
+
+        return $message;
+    }
+
+    private function formatSizeUnits($bytes)
+    {
+        if ($bytes >= 1073741824)
+        {
+            $bytes = number_format($bytes / 1073741824, 2) . ' GB';
+        }
+        elseif ($bytes >= 1048576)
+        {
+            $bytes = number_format($bytes / 1048576, 2) . ' MB';
+        }
+        elseif ($bytes >= 1024)
+        {
+            $bytes = number_format($bytes / 1024, 2) . ' KB';
+        }
+        elseif ($bytes > 1)
+        {
+            $bytes = $bytes . ' bytes';
+        }
+        elseif ($bytes == 1)
+        {
+            $bytes = $bytes . ' byte';
+        }
+        else
+        {
+            $bytes = '0 bytes';
+        }
+
+        return $bytes;
+    }
+
+    /**
+     * @param $class
+     * @param $key
+     * @param string $repoMethod
+     * @return null
      * @throws \Exception
      */
     public function findExistingEntity($class, $key, $repoMethod = 'findOneBy')
