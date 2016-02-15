@@ -49,7 +49,6 @@ services:
             - '@annotation_reader'
             - '@bigfoot_core.translation.repository'
             - '@bigfoot_import.transversal_data.manager'
-            - '@logger'
 
     bigfoot_import.data.mapper:
         class: %bigfoot_import.data.mapper.class%

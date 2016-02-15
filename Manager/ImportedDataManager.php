@@ -64,7 +64,6 @@ class ImportedDataManager
      * @param \Doctrine\Common\Annotations\FileCacheReader $annotationReader
      * @param \Bigfoot\Bundle\CoreBundle\Entity\TranslationRepository $bigfootTransRepo
      * @param transversalDataManager $transversalDataManager
-     * @param Logger $logger
      */
     public function __construct(
         $entityManager,
@@ -73,8 +72,7 @@ class ImportedDataManager
         $translationQueue,
         $annotationReader,
         $bigfootTransRepo,
-        $transversalDataManager,
-        $logger
+        $transversalDataManager
     ) {
         $this->entityManager          = $entityManager;
         $this->validator              = $validator;
