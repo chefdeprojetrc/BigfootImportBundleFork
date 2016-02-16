@@ -4,6 +4,7 @@ namespace Bigfoot\Bundle\ImportBundle\Manager;
 
 use Bigfoot\Bundle\ImportBundle\Translation\DataTranslationQueue;
 use Doctrine\ORM\EntityManager;
+use mageekguy\atoum\tests\units\asserters\string;
 use Symfony\Bridge\Monolog\Logger;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\HttpKernel\Log\NullLogger;
@@ -56,6 +57,9 @@ class ImportedDataManager
     /** @var  Logger */
     protected $logger;
 
+    /** @var  string */
+    protected $environment;
+
     /**
      * @param \Doctrine\ORM\EntityManager $entityManager
      * @param \Symfony\Component\Validator\Validator $validator
@@ -64,6 +68,7 @@ class ImportedDataManager
      * @param \Doctrine\Common\Annotations\FileCacheReader $annotationReader
      * @param \Bigfoot\Bundle\CoreBundle\Entity\TranslationRepository $bigfootTransRepo
      * @param transversalDataManager $transversalDataManager
+     * @param $environment
      */
     public function __construct(
         $entityManager,
@@ -72,7 +77,8 @@ class ImportedDataManager
         $translationQueue,
         $annotationReader,
         $bigfootTransRepo,
-        $transversalDataManager
+        $transversalDataManager,
+        $environment
     ) {
         $this->entityManager          = $entityManager;
         $this->validator              = $validator;
@@ -83,6 +89,7 @@ class ImportedDataManager
         $this->transversalDataManager = $transversalDataManager;
         $this->logger                 = new NullLogger();
         $this->timer                  = new Stopwatch();
+        $this->environment            = $environment;
     }
 
     /**
@@ -183,8 +190,10 @@ class ImportedDataManager
      */
     public function flush()
     {
-        $this->timer = new Stopwatch();
-        $this->preFlushVerbose($this->timer->start('flushOp'));
+        if ($this->environment != 'prod') {
+            $this->timer = new Stopwatch();
+            $this->preFlushVerbose($this->timer->start('flushOp'));
+        }
 
         $this->processTranslations();
         $em = $this->entityManager;
@@ -194,7 +203,10 @@ class ImportedDataManager
         $this->translationQueue->clear();
         $this->transversalDataManager->rebuildReferences();
 
-        $this->postFlushVerbose($this->timer->stop('flushOp'));
+        if ($this->environment != 'prod') {
+            $this->postFlushVerbose($this->timer->stop('flushOp'));
+            unset($this->timer);
+        }
 
         gc_collect_cycles();
     }
@@ -236,9 +248,9 @@ class ImportedDataManager
         $managed = $this->getManagedEntity();
         $time = new \DateTime('now');
 
-        $this->logger->notice("\n");
+        $this->logger->warning("\n");
         $this->logger->warning(sprintf("\t<info>#######></info> FLUSH OPERATION"));
-        $this->logger->notice(sprintf("\t<info>#</info> > Start Time: <comment>%s</comment>", $time->format('H:i:s')));
+        $this->logger->warning(sprintf("\t<info>#</info> > Start Time: <comment>%s</comment>", $time->format('H:i:s')));
         $this->logger->notice(sprintf("\t<info>#</info> > Entity to insert: <comment>%s</comment>", count($managed['insert'])));
         $this->logger->notice(sprintf("\t<info>#</info> > Entity to update: <comment>%s</comment>", count($managed['update'])));
         $this->logger->notice(sprintf("\t<info>#</info> > Entity to delete: <comment>%s</comment>", count($managed['delete'])));
@@ -263,16 +275,22 @@ class ImportedDataManager
                 $this->logger->debug(sprintf("\t<info>#</info>      <comment>%5s</comment> x <comment>%s</comment>", $nb, $o));
             }
         }
+
+        unset($time);
+        unset($managed);
     }
 
     protected function postFlushVerbose(StopwatchEvent $event)
     {
         $time = new \DateTime('now');
+
         $this->logger->warning(sprintf("\t<info>#</info> > End Time: <comment>%s</comment>", $time->format('H:i:s')));
         $this->logger->notice(sprintf("\t<info>#</info> > Duration: <comment>%s</comment>", $this->getHumanTime($event->getEndTime())));
         $this->logger->info(sprintf("\t<info>#</info> > Memory: <comment>%s</comment>", $this->formatSizeUnits($event->getMemory())));
         $this->logger->warning(sprintf("\t<info>#######></info>"));
         $this->logger->notice("\n");
+
+        unset($time);
     }
 
     private function getHumanTime($ms)
