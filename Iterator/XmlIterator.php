@@ -43,9 +43,16 @@ class XmlIterator implements \Iterator, \Countable
      */
     public function rewind()
     {
+        libxml_use_internal_errors(true);
+
         $dom = new \DOMDocument();
         @$dom->loadXML($this->content);
         $this->currentContent = $dom;
+
+        unset($dom);
+
+        libxml_use_internal_errors(false);
+        libxml_use_internal_errors(true);
     }
 
     /**
