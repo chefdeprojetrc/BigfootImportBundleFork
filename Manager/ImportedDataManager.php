@@ -7,7 +7,7 @@ use Doctrine\ORM\EntityManager;
 use mageekguy\atoum\tests\units\asserters\string;
 use Symfony\Bridge\Monolog\Logger;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\HttpKernel\Log\NullLogger;
+use Psr\Log\NullLogger;
 use Symfony\Component\PropertyAccess\PropertyAccessor;
 use Symfony\Component\Stopwatch\Stopwatch;
 use Symfony\Component\Stopwatch\StopwatchEvent;

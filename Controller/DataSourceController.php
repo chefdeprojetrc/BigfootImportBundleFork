@@ -64,7 +64,7 @@ class DataSourceController extends CrudController
 
     protected function getFormType()
     {
-        return 'bigfoot_bundle_importbundle_datasourcetype';
+        return DataSourceType::class;
     }
 
     /**

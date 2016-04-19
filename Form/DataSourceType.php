@@ -22,8 +22,8 @@ class DataSourceType extends AbstractType
     {
         $builder
             ->add('name')
-            ->add('protocol', 'protocol', array(
-                'empty_value' => 'Choose protocol'
+            ->add('protocol', ProtocolType::class, array(
+                'placeholder' => 'Choose protocol'
             ))
             ->add('domain')
             ->add('port')
@@ -35,7 +35,7 @@ class DataSourceType extends AbstractType
     /**
      * Set the default options
      *
-     * @param OptionsResolverInterface $resolver
+     * @param OptionsResolver $resolver
      */
     public function configureOptions(OptionsResolver $resolver)
     {
