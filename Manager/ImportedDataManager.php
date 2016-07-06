@@ -424,10 +424,13 @@ class ImportedDataManager
                 $gedmoAnnotations = $this->annotationReader->getClassAnnotation($reflectionClass, 'Gedmo\\Mapping\\Annotation\\TranslationEntity');
 
                 if ($gedmoAnnotations !== null &&
+                    $gedmoAnnotations !== false &&
                     $gedmoAnnotations->class != '' &&
                     class_exists($gedmoAnnotations->class) &&
                     isset(class_parents($gedmoAnnotations->class)['Gedmo\Translatable\Entity\MappedSuperclass\AbstractPersonalTranslation'])) {
                     $translationRepository = $bigfootTransRepo;
+                } elseif (!empty($gedmoAnnotations->class) && isset(class_parents($gedmoAnnotations->class)['Gedmo\Translatable\Entity\MappedSuperclass\AbstractTranslation'])) {
+                    $translationRepository = $em->getRepository($gedmoAnnotations->class);
                 } else {
                     $translationRepository = $em->getRepository('Gedmo\\Translatable\\Entity\\Translation');
                 }
