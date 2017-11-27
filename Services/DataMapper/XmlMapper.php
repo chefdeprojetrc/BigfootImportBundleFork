@@ -146,10 +146,10 @@ class XmlMapper
                             // Nettoyage avant import
                             if (isset($typeDescription['clear'])) {
                                 if (is_array($typeDescription['clear'])) {
-                                    $oldElements = $object->$typeDescription['clear']['getFunction']();
+                                    $oldElements = $object->{$typeDescription['clear']['getFunction']}();
                                     if ($oldElements != null) {
                                         foreach ($oldElements as $oldElement) {
-                                            $object->$typeDescription['clear']['removeFunction']($oldElement);
+                                            $object->{$typeDescription['clear']['removeFunction']}($oldElement);
                                             if(isset($typeDescription['clear']['removeChild']) && $typeDescription['clear']['removeChild'])
                                             {
                                                 $em->remove($oldElement);
@@ -191,7 +191,7 @@ class XmlMapper
             }
 
             if (isset($description['relationToParent']) && is_string($description['relationToParent'])) {
-                $object->$description['relationToParent']($parentElement);
+                $object->{$description['relationToParent']}($parentElement);
             }
 
             $em->persist($object);
