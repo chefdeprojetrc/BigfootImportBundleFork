@@ -13,20 +13,25 @@ parameters:
 services:
     bigfoot_import.client:
         class: '%bigfoot_import.client.class%'
+        alias: '%bigfoot_import.client.class%'
     bigfoot_import.csvparser:
         class: '%bigfoot_import.csvparser.class%'
+        alias: '%bigfoot_import.csvparser.class%'
     bigfoot_import.xmlmapper:
         class: '%bigfoot_import.xmlmapper.class%'
+        alias: '%bigfoot_import.xmlmapper.class%'
         arguments:
             - '@doctrine.orm.entity_manager'
     form.type.protocol:
         class: Bigfoot\Bundle\ImportBundle\Form\ProtocolType
+        alias: Bigfoot\Bundle\ImportBundle\Form\ProtocolType
         arguments:
             - "%import.datasource.protocols%"
         tags:
             - { name: form.type, alias: protocol }
     bigfoot_bundle_importbundle_datasourcetype:
         class: '%bigfoot_import.datasourcetype.class%'
+        alias: '%bigfoot_import.datasourcetype.class%'
         arguments: ['@service_container']
         tags:
             - { name: form.type, alias: bigfoot_bundle_importbundle_datasourcetype}
@@ -34,6 +39,7 @@ services:
     # Menu Subscriber
     bigfoot_import.subscriber.menu:
         class: Bigfoot\Bundle\ImportBundle\Subscriber\MenuSubscriber
+        alias: Bigfoot\Bundle\ImportBundle\Subscriber\MenuSubscriber
         arguments:
             - '@security.token_storage'
         tags:
@@ -41,6 +47,7 @@ services:
 
     bigfoot_import.data.manager:
         class: %bigfoot_import.data.manager.class%
+        alias: %bigfoot_import.data.manager.class%
         arguments:
             - '@doctrine.orm.entity_manager'
             - '@validator'
@@ -53,6 +60,7 @@ services:
 
     bigfoot_import.data.mapper:
         class: %bigfoot_import.data.mapper.class%
+        alias: %bigfoot_import.data.mapper.class%
         abstract: true
         arguments:
             - '@doctrine.orm.entity_manager'
@@ -61,12 +69,15 @@ services:
 
     bigfoot_import.translation.queue:
         class: %bigfoot_import.translation.queue.class%
+        alias: %bigfoot_import.translation.queue.class%
 
     bigfoot_import.data.mapper.factory:
         class: %bigfoot_import.data.mapper.factory.class%
+        alias: %bigfoot_import.data.mapper.factory.class%
 
     bigfoot_import.transversal_data.manager:
         class: %bigfoot_import.transversal_data.manager.class%
+        alias: %bigfoot_import.transversal_data.manager.class%
         arguments:
             - '@doctrine.orm.entity_manager'
             - '@property_accessor'
